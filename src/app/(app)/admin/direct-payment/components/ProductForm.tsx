@@ -35,13 +35,13 @@ const ProductForm = ({
   const productFields: FieldForm[] = [
     {
       name: "title",
-      label: "عنوان الاشتراك",
+      label: "اسم المنتج",
       type: "text",
       placeholder: "مثلاً: اشتراك شهري",
     },
     {
       name: "description",
-      label: "الوصف",
+      label: "وصف المنتج",
       type: "text",
       placeholder: "مثلاً: اشتراك في الخدمة لمدة شهر",
     },
