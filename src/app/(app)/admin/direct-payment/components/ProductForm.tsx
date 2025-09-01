@@ -37,13 +37,13 @@ const ProductForm = ({
       name: "title",
       label: "اسم المنتج",
       type: "text",
-      placeholder: "مثلاً: اشتراك شهري",
+      placeholder: " مثلاً: ساعة نسائية  ",
     },
     {
       name: "description",
       label: "وصف المنتج",
       type: "text",
-      placeholder: "مثلاً: اشتراك في الخدمة لمدة شهر",
+      placeholder: "مثلاً: ساعة نسائية  ",
     },
     {
       name: "price",
