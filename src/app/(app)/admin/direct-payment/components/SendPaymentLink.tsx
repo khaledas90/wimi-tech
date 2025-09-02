@@ -64,9 +64,7 @@ const SendPaymentLink = ({
           amount,
           orderId: orderId,
         },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       if (response.data.success) {
@@ -86,40 +84,39 @@ const SendPaymentLink = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-      <div className="text-center mb-6">
-        <Send className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-        <h3 className="text-xl font-semibold text-gray-800">
+    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 max-w-md mx-auto">
+      <div className="text-center mb-4 sm:mb-6">
+        <Send className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 mx-auto mb-2 sm:mb-3" />
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
           إرسال رابط الدفع
         </h3>
-        <p className="text-gray-600 text-sm">إرسال رابط الدفع للعميل</p>
+        <p className="text-sm sm:text-base text-gray-600">إرسال رابط الدفع للعميل</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <FormField
           fields={fields}
           data={formData}
           onChange={handleFormChange}
         />
 
-        {/* show calculated amount */}
-        <div className="bg-gray-50 p-3 rounded-lg text-center text-gray-700 font-medium">
+        <div className="bg-gray-50 p-2 sm:p-3 rounded-lg text-center text-gray-700 font-medium text-sm sm:text-base">
           المبلغ: {amount.toLocaleString()} ريال
         </div>
 
         <button
           type="submit"
           disabled={sending}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base"
         >
           {sending ? (
             <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
               جاري الإرسال...
             </>
           ) : (
             <>
-              <Send size={18} />
+              <Send size={16} className="sm:w-5 sm:h-5" />
               إرسال رابط الدفع
             </>
           )}
