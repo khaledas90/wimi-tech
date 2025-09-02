@@ -74,7 +74,7 @@ export default function AddProductPage() {
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("price", data.price);
-    formData.append("stockQuantity", data.stockQuantity);
+    formData.append("stockQuantity", data.stockQuantity || "0");
     formData.append("category", data.category);
 
     if (imageFile) {
