@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-bold mb-4 border-b border-purple-300 pb-2">
               معرض الصور
             </h3>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1">
               <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
                 <Link
                   href="https://maroof.sa/businesses/details/365522?pageType=1&userId=41203506-6e83-40be-8652-3f40f6278125"
@@ -128,8 +128,8 @@ const Footer: React.FC = () => {
                     src={image1}
                     alt="قم المعرف"
                     width={300}
-                    height={200}
-                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    height={150}
+                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
@@ -140,8 +140,8 @@ const Footer: React.FC = () => {
                     src={image2}
                     alt="ضريبة القيمة المضافة"
                     width={300}
-                    height={200}
-                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    height={150}
+                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
@@ -155,8 +155,8 @@ const Footer: React.FC = () => {
                     src={image3}
                     alt="شهادة المركز السعودي للأعمال"
                     width={300}
-                    height={200}
-                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    height={150}
+                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
