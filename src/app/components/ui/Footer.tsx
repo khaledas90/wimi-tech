@@ -118,8 +118,8 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-bold mb-4 border-b border-purple-300 pb-2">
               معرض الصور
             </h3>
-            <div className="space-y-4">
-              <div className="relative group overflow-hidden rounded-lg  transition-all duration-300">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
                 <Link
                   href="https://maroof.sa/businesses/details/365522?pageType=1&userId=41203506-6e83-40be-8652-3f40f6278125"
                   target="_blank"
@@ -127,35 +127,36 @@ const Footer: React.FC = () => {
                   <Image
                     src={image1}
                     alt="قم المعرف"
-                    width={200}
-                    height={150}
-                    className="w-full h-32 sm:h-36 object-contain cursor-pointer  transition-transform duration-300 p-2"
+                    width={300}
+                    height={200}
+                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
               </div>
-
-              <div className="relative group overflow-hidden rounded-lg  transition-all duration-300">
+              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
                 <Link href="/saudi">
                   <Image
                     src={image2}
                     alt="ضريبة القيمة المضافة"
-                    width={200}
-                    height={150}
-                    className="w-full h-32 sm:h-36 object-contain cursor-pointer  transition-transform duration-300 p-2"
+                    width={300}
+                    height={200}
+                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
               </div>
-
-              <div className="relative group overflow-hidden rounded-lg  transition-all duration-300">
-                <Link href="/" target="_blank">
+              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
+                <Link
+                  href="https://drive.google.com/file/d/1wsazlpuIgdPF3Ij6T8DNDJqHUFqbXpEZ/view"
+                  target="_blank"
+                >
                   <Image
                     src={image3}
                     alt="شهادة المركز السعودي للأعمال"
-                    width={200}
-                    height={150}
-                    className="w-full h-32 sm:h-36 object-contain cursor-pointer  transition-transform duration-300 p-2"
+                    width={300}
+                    height={200}
+                    className="w-full h-full object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
