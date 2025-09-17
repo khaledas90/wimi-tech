@@ -486,3 +486,29 @@ export interface userNotigication {
   createdAt: string;
   __v: 0;
 }
+
+// Order Details Types
+export interface OrderItem {
+  title: string;
+  phoneNumber: string;
+  description: string;
+  price: number;
+  status: "Pending" | "Confirmed" | "Shipped" | "Delivered" | "Cancelled";
+  _id: string;
+  order_id: string;
+}
+
+export interface OrderDetails {
+  _id: string;
+  traderId: string;
+  orders: OrderItem[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface OrderDetailsResponse {
+  success: boolean;
+  message: string;
+  data: OrderDetails;
+}
