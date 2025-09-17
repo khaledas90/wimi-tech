@@ -9,6 +9,7 @@ const navItems = [
   { href: '/admin/add-product', label: 'إضافة منتج', icon: PackagePlus },
   // { href: '/admin/update', label: 'الإعدادات', icon: Settings },
   { href: '/admin/view', label: 'عرض المنتجات', icon: View },
+  { href: '/admin/order', label: 'عرض الطلبات', icon: View },
   { href: '/admin/notification', label: 'عرض الاشعارات', icon: Bell },
   { href: '/admin/direct-payment', label: 'المدفوعات المباشرة', icon: BadgeDollarSign },
 ]
