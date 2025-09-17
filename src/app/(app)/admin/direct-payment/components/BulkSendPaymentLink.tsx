@@ -38,7 +38,10 @@ const BulkSendPaymentLink = ({
   const [sending, setSending] = useState(false);
 
   // Calculate total amount for all orders
-  const totalAmount = orders.reduce((sum, order) => sum + (order.price * order.quantity), 0);
+  const totalAmount = orders.reduce(
+    (sum, order) => sum + order.price * order.quantity,
+    0
+  );
 
   const fields: FieldForm[] = [
     {
@@ -63,7 +66,7 @@ const BulkSendPaymentLink = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
       toast.error("يرجى إدخال اسم العميل");
       return;
@@ -78,14 +81,14 @@ const BulkSendPaymentLink = ({
 
     try {
       const token = Cookies.get("token_admin");
-      
+
       // Prepare orders data for bulk sending
-      const ordersData = orders.map(order => ({
+      const ordersData = orders.map((order) => ({
         orderId: order.order_id,
         amount: order.price * order.quantity,
         title: order.title,
         quantity: order.quantity,
-        price: order.price
+        price: order.price,
       }));
 
       const response = await axios.post(
@@ -94,13 +97,13 @@ const BulkSendPaymentLink = ({
           phoneNumber: formData.phoneNumber,
           name: formData.name,
           orders: ordersData,
-          totalAmount: totalAmount
+          totalAmount: totalAmount,
         },
-        { 
-          headers: { 
+        {
+          headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          } 
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -144,12 +147,18 @@ const BulkSendPaymentLink = ({
 
         {/* Orders Summary */}
         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">ملخص الطلبات:</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            ملخص الطلبات:
+          </h4>
           <div className="space-y-1 text-xs text-gray-600">
             {orders.map((order, index) => (
               <div key={order._id} className="flex justify-between">
-                <span>{index + 1}. {order.title}</span>
-                <span className="font-medium">{(order.price * order.quantity).toLocaleString()} ريال</span>
+                <span>
+                  {index + 1}. {order.title}
+                </span>
+                <span className="font-medium">
+                  {(order.price * order.quantity).toLocaleString()} ريال
+                </span>
               </div>
             ))}
           </div>
