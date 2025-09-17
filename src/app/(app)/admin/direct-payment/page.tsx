@@ -19,8 +19,9 @@ import Image from "next/image";
 import Logo from "../../../../../public/asset/images/ويمي تك.jpg";
 import { toArabicFullDate } from "@/app/lib/fun";
 import ProductForm from "./components/ProductForm";
-import OrdersTable from "./components/OrdersTable";
 import SendPaymentLink from "./components/SendPaymentLink";
+import BulkSendPaymentLink from "./components/BulkSendPaymentLink";
+import OrdersTable from "./components/OrdersTable";
 
 interface UserInfo {
   _id: string;
@@ -43,9 +44,11 @@ const DirectPaymentPage = () => {
   const [dataUser, setDataUser] = useState<UserInfo>();
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showSendLinkModal, setShowSendLinkModal] = useState(false);
+  const [showBulkSendModal, setShowBulkSendModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedQuantity, setSelectedQuantity] = useState(0);
   const [selectedPrice, setSelectedPrice] = useState(0);
+  const [selectedOrdersForBulk, setSelectedOrdersForBulk] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const token = Cookies.get("token_admin");
 
@@ -115,11 +118,27 @@ const DirectPaymentPage = () => {
     toast.success("تم إرسال رابط الدفع بنجاح");
   };
 
+  const handleBulkLinkSent = () => {
+    setShowBulkSendModal(false);
+    setSelectedOrdersForBulk([]);
+    toast.success("تم إرسال روابط الدفع بنجاح");
+  };
+
   const openSendLinkModal = (orderId: string, quantity: number, price: number) => {
     setSelectedOrderId(orderId);
     setSelectedQuantity(quantity);
     setSelectedPrice(price);
     setShowSendLinkModal(true);
+  };
+
+  const handleBulkSendPaymentLinks = (selectedOrders: any[]) => {
+    if (selectedOrders.length === 0) {
+      toast.error("يرجى تحديد طلب واحد على الأقل");
+      return;
+    }
+    
+    setSelectedOrdersForBulk(selectedOrders);
+    setShowBulkSendModal(true);
   };
 
   return (
@@ -289,7 +308,7 @@ const DirectPaymentPage = () => {
                 <OrdersTable
                   phoneNumber={dataUser?.phoneNumber || ""}
                   onOrderDeleted={handleOrderDeleted}
-                  onSendPaymentLink={openSendLinkModal}
+                  onSendBulkPaymentLinks={handleBulkSendPaymentLinks}
                   refreshTrigger={refreshTrigger}
                 />
               </div>
@@ -351,7 +370,7 @@ const DirectPaymentPage = () => {
                 <OrdersTable
                   phoneNumber={phoneNumber}
                   onOrderDeleted={handleOrderDeleted}
-                  onSendPaymentLink={openSendLinkModal}
+                  onSendBulkPaymentLinks={handleBulkSendPaymentLinks}
                   refreshTrigger={refreshTrigger}
                 />
               </div>
@@ -394,6 +413,15 @@ const DirectPaymentPage = () => {
             quantity={selectedQuantity}
             price={selectedPrice}
             onLinkSent={handleLinkSent}
+          />
+        )}
+
+        {showBulkSendModal && (
+          <BulkSendPaymentLink
+            phoneNumber={dataUser?.phoneNumber || phoneNumber}
+            orders={selectedOrdersForBulk}
+            onLinkSent={handleBulkLinkSent}
+            onClose={() => setShowBulkSendModal(false)}
           />
         )}
       </div>

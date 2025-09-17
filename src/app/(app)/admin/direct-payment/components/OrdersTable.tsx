@@ -19,19 +19,21 @@ interface Order {
 interface OrdersTableProps {
   phoneNumber: string;
   onOrderDeleted: () => void;
-  onSendPaymentLink: (orderId: string, quantity: number, price: number) => void;
+  onSendBulkPaymentLinks: (selectedOrders: Order[]) => void;
   refreshTrigger?: number;
 }
 
 const OrdersTable = ({
   phoneNumber,
   onOrderDeleted,
-  onSendPaymentLink,
+  onSendBulkPaymentLinks,
   refreshTrigger,
 }: OrdersTableProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+  const [sendingBulk, setSendingBulk] = useState(false);
 
   const token = Cookies.get("token_admin");
 
@@ -40,6 +42,11 @@ const OrdersTable = ({
       fetchOrders();
     }
   }, [phoneNumber, refreshTrigger]);
+
+  useEffect(() => {
+    // Clear selections when orders change
+    setSelectedOrders([]);
+  }, [orders]);
 
   const fetchOrders = async () => {
     if (!phoneNumber) return;
@@ -100,6 +107,32 @@ const OrdersTable = ({
     }
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(orders.map(order => order.order_id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const handleSelectOrder = (orderId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOrders(prev => [...prev, orderId]);
+    } else {
+      setSelectedOrders(prev => prev.filter(id => id !== orderId));
+    }
+  };
+
+  const handleSendSelected = () => {
+    const selectedOrdersData = orders.filter(order => 
+      selectedOrders.includes(order.order_id)
+    );
+    onSendBulkPaymentLinks(selectedOrdersData);
+  };
+
+  const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
+  const isIndeterminate = selectedOrders.length > 0 && selectedOrders.length < orders.length;
+
   if (loading) {
     return (
       <div className="text-center py-6 sm:py-8">
@@ -119,6 +152,39 @@ const OrdersTable = ({
 
   return (
     <div className="w-full">
+      {/* Bulk Actions */}
+      {orders.length > 0 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = isIndeterminate;
+                  }}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  تحديد الكل ({selectedOrders.length}/{orders.length})
+                </span>
+              </label>
+            </div>
+            {selectedOrders.length > 0 && (
+              <button
+                onClick={handleSendSelected}
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+              >
+                <Send size={16} />
+                إرسال المحدد ({selectedOrders.length})
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Table for larger screens */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
@@ -151,7 +217,15 @@ const OrdersTable = ({
             {orders.map((order, index) => (
               <tr key={order._id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b">
-                  {index + 1}
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedOrders.includes(order.order_id)}
+                      onChange={(e) => handleSelectOrder(order.order_id, e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <span>{index + 1}</span>
+                  </label>
                 </td>
                 <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b font-medium">
                   {order.title}
@@ -169,27 +243,15 @@ const OrdersTable = ({
                   {order.status || "قيد المعالجة"}
                 </td>
                 <td className="px-3 sm:px-4 py-2 sm:py-3 border-b">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        onSendPaymentLink(order.order_id, order.quantity, order.price)
-                      }
-                      className="text-blue-500 hover:text-blue-700 transition-colors"
-                      title="إرسال رابط الدفع"
-                      aria-label="إرسال رابط الدفع"
-                    >
-                      <Send size={16} className="sm:w-5 sm:h-5" />
-                    </button>
-                    <button
-                      onClick={() => deleteOrder(order.order_id)}
-                      disabled={deletingOrder === order.order_id}
-                      className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
-                      title="حذف الطلب"
-                      aria-label="حذف الطلب"
-                    >
-                      <Trash2 size={16} className="sm:w-5 sm:h-5" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => deleteOrder(order.order_id)}
+                    disabled={deletingOrder === order.order_id}
+                    className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                    title="حذف الطلب"
+                    aria-label="حذف الطلب"
+                  >
+                    <Trash2 size={16} className="sm:w-5 sm:h-5" />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -205,26 +267,23 @@ const OrdersTable = ({
             className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
           >
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-900">#{index + 1}</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() =>
-                    onSendPaymentLink(order.order_id, order.quantity, order.price)
-                  }
-                  className="text-blue-500 hover:text-blue-700 transition-colors"
-                  title="إرسال رابط الدفع"
-                >
-                  <Send size={16} />
-                </button>
-                <button
-                  onClick={() => deleteOrder(order.order_id)}
-                  disabled={deletingOrder === order.order_id}
-                  className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
-                  title="حذف الطلب"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedOrders.includes(order.order_id)}
+                  onChange={(e) => handleSelectOrder(order.order_id, e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm font-medium text-gray-900">#{index + 1}</span>
+              </label>
+              <button
+                onClick={() => deleteOrder(order.order_id)}
+                disabled={deletingOrder === order.order_id}
+                className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                title="حذف الطلب"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
