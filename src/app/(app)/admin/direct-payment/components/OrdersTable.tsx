@@ -14,6 +14,7 @@ interface Order {
   quantity: number;
   order_id: string;
   status?: string;
+  phoneNumber?: string;
 }
 
 interface OrdersTableProps {
@@ -171,7 +172,7 @@ const OrdersTable = ({
 
   return (
     <div className="w-full">
-      {orders.length > 0 && (
+      {orders.filter((or) => or.phoneNumber == phoneNumber).length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -231,116 +232,122 @@ const OrdersTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {orders.map((order, index) => (
-              <tr
-                key={order._id}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.includes(order.order_id)}
-                      onChange={(e) =>
-                        handleSelectOrder(order.order_id, e.target.checked)
-                      }
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <span>{index + 1}</span>
-                  </label>
-                </td>
-                <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b font-medium">
-                  {order.title}
-                </td>
-                <td className="px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b max-w-xs truncate">
-                  {order.description}
-                </td>
-                <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-600 border-b font-semibold">
-                  {order.price} ريال
-                </td>
-                <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b">
-                  {order.quantity}
-                </td>
-                <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b">
-                  {order.status || "قيد المعالجة"}
-                </td>
-                <td className="px-3 sm:px-4 py-2 sm:py-3 border-b">
-                  <button
-                    onClick={() => deleteOrder(order.order_id)}
-                    disabled={deletingOrder === order.order_id}
-                    className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
-                    title="حذف الطلب"
-                    aria-label="حذف الطلب"
-                  >
-                    <Trash2 size={16} className="sm:w-5 sm:h-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {orders
+              .filter((or) => or.phoneNumber == phoneNumber)
+              .map((order, index) => (
+                <tr
+                  key={order.order_id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.includes(order.order_id)}
+                        onChange={(e) =>
+                          handleSelectOrder(order.order_id, e.target.checked)
+                        }
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span>{index + 1}</span>
+                    </label>
+                  </td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b font-medium">
+                    {order.title}
+                  </td>
+                  <td className="px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b max-w-xs truncate">
+                    {order.description}
+                  </td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-green-600 border-b font-semibold">
+                    {order.price} ريال
+                  </td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b">
+                    {order.quantity}
+                  </td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 border-b">
+                    {order.status || "قيد المعالجة"}
+                  </td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 border-b">
+                    <button
+                      onClick={() => deleteOrder(order.order_id)}
+                      disabled={deletingOrder === order.order_id}
+                      className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                      title="حذف الطلب"
+                      aria-label="حذف الطلب"
+                    >
+                      <Trash2 size={16} className="sm:w-5 sm:h-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
       {/* Card layout for mobile screens */}
       <div className="block sm:hidden space-y-4">
-        {orders.map((order, index) => (
-          <div
-            key={order._id}
-            className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={selectedOrders.includes(order.order_id)}
-                  onChange={(e) =>
-                    handleSelectOrder(order.order_id, e.target.checked)
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm font-medium text-gray-900">
-                  #{index + 1}
-                </span>
-              </label>
-              <button
-                onClick={() => deleteOrder(order.order_id)}
-                disabled={deletingOrder === order.order_id}
-                className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
-                title="حذف الطلب"
-              >
-                <Trash2 size={16} />
-              </button>
+        {orders
+          .filter((or) => or.phoneNumber == phoneNumber)
+          .map((order, index) => (
+            <div
+              key={order._id}
+              className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.includes(order._id)}
+                    onChange={(e) =>
+                      handleSelectOrder(order._id, e.target.checked)
+                    }
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="text-sm font-medium text-gray-900">
+                    #{index + 1}
+                  </span>
+                </label>
+                <button
+                  onClick={() => deleteOrder(order._id)}
+                  disabled={deletingOrder === order._id}
+                  className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+                  title="حذف الطلب"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">العنوان</span>
+                  <span className="font-medium text-gray-700">
+                    {order.title}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">الوصف</span>
+                  <span className="text-gray-700 truncate">
+                    {order.description}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">السعر</span>
+                  <span className="text-green-600 font-semibold">
+                    {order.price} ريال
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">الكمية</span>
+                  <span className="text-gray-700">{order.quantity}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">الحالة</span>
+                  <span className="text-gray-700">
+                    {order.status || "قيد المعالجة"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">العنوان</span>
-                <span className="font-medium text-gray-700">{order.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">الوصف</span>
-                <span className="text-gray-700 truncate">
-                  {order.description}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">السعر</span>
-                <span className="text-green-600 font-semibold">
-                  {order.price} ريال
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">الكمية</span>
-                <span className="text-gray-700">{order.quantity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">الحالة</span>
-                <span className="text-gray-700">
-                  {order.status || "قيد المعالجة"}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

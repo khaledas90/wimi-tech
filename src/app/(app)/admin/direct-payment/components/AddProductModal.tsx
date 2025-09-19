@@ -79,6 +79,7 @@ const AddProductModal = ({
 
     try {
       const newProduct = {
+        _id: Date.now().toString(),
         title: productFormData.title,
         description: productFormData.description,
         price: Number(productFormData.price),
