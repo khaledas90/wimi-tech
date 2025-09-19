@@ -113,6 +113,7 @@ export default function AuthTrader() {
       if (res.status === 200 || res.status === 201) {
         const { token } = res.data.data;
         Cookies.set("token_admin", token, { expires: 1 });
+        Cookies.set("phone", loginData.phoneNumber);
         toast.success("تم تسجيل الدخول بنجاح 🎉");
         setTimeout(() => {
           window.location.href = "/admin";
@@ -150,6 +151,7 @@ export default function AuthTrader() {
       if (res.status === 200 || res.status === 201) {
         toast.success("تم إنشاء الحساب بنجاح 🎉");
         // Send OTP to trader and open verification modal
+        Cookies.set("phone", registerData.phoneNumber);
         try {
           await axios.post(
             `${BaseUrl}traders/verify-otp`,
@@ -280,10 +282,7 @@ export default function AuthTrader() {
       </div>
 
       {/* Terms and Conditions Modal */}
-      <TermsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <TermsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
 
       {verifyModalOpen && (
         <PhoneVerificationModal

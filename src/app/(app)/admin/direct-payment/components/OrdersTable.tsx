@@ -36,10 +36,10 @@ const OrdersTable = ({
   const [sendingBulk, setSendingBulk] = useState(false);
 
   const token = Cookies.get("token_admin");
-
+  const Allorders = JSON.parse(Cookies.get("direct_payment_products") ?? "[]");
   useEffect(() => {
     if (phoneNumber) {
-      fetchOrders();
+      setOrders(Allorders);
     }
   }, [phoneNumber, refreshTrigger]);
 
@@ -48,68 +48,83 @@ const OrdersTable = ({
     setSelectedOrders([]);
   }, [orders]);
 
-  const fetchOrders = async () => {
-    if (!phoneNumber) return;
-    if (!token) {
-      toast.error("يرجى تسجيل الدخول أولاً");
-      return;
-    }
+  // const fetchOrders = async () => {
+  //   if (!phoneNumber) return;
+  //   if (!token) {
+  //     toast.error("يرجى تسجيل الدخول أولاً");
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BaseUrl}direct-payment/${phoneNumber}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  //   setLoading(true);
+  //   try {
+  //     const response = await axios.get(
+  //       `${BaseUrl}direct-payment/${phoneNumber}`,
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
 
-      if (response.data.success) {
-        setOrders(response.data.data || []);
-      } else {
-        toast.error(response.data.message || "فشل في جلب الطلبات");
-      }
-    } catch (error: any) {
-      console.error("Error fetching orders:", error);
-      if (error.response?.status === 404) {
-        setOrders([]);
-      } else {
-        toast.error(error?.response?.data?.message || "خطأ في جلب الطلبات");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (response.data.success) {
+  //       setOrders(response.data.data || []);
+  //     } else {
+  //       toast.error(response.data.message || "فشل في جلب الطلبات");
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Error fetching orders:", error);
+  //     if (error.response?.status === 404) {
+  //       setOrders([]);
+  //     } else {
+  //       toast.error(error?.response?.data?.message || "خطأ في جلب الطلبات");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const deleteOrder = async (orderId: string) => {
-    if (!token) {
-      toast.error("يرجى تسجيل الدخول أولاً");
-      return;
-    }
+    const updatedOrders = orders.filter((order) => order.order_id !== orderId);
 
-    setDeletingOrder(orderId);
-    try {
-      const response = await axios.delete(
-        `${BaseUrl}direct-payment/${orderId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    setOrders((prevOrders) => {
+      const index = prevOrders.findIndex((order) => order.order_id === orderId);
 
-      if (response.data.success) {
-        toast.success("تم حذف الطلب بنجاح");
-        onOrderDeleted();
-        fetchOrders();
-      } else {
-        toast.error(response.data.message || "فشل في حذف الطلب");
+      if (index !== -1) {
+        const updatedOrders = [...prevOrders];
+        updatedOrders.splice(index, 1);
+
+        Cookies.set("direct_payment_products", JSON.stringify(updatedOrders), {
+          expires: 7,
+        });
+
+        return updatedOrders;
       }
-    } catch (error: any) {
-      console.error("Error deleting order:", error);
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الطلب");
-    } finally {
-      setDeletingOrder(null);
-    }
+      return prevOrders;
+    });
+    // if (!token) {
+    //   toast.error("يرجى تسجيل الدخول أولاً");
+    //   return;
+    // }
+    // setDeletingOrder(orderId);
+    // try {
+    //   const response = await axios.delete(
+    //     `${BaseUrl}direct-payment/${orderId}`,
+    //     { headers: { Authorization: `Bearer ${token}` } }
+    //   );
+    //   if (response.data.success) {
+    //     toast.success("تم حذف الطلب بنجاح");
+    //     onOrderDeleted();
+    //     // fetchOrders();
+    //   } else {
+    //     toast.error(response.data.message || "فشل في حذف الطلب");
+    //   }
+    // } catch (error: any) {
+    //   console.error("Error deleting order:", error);
+    //   toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الطلب");
+    // } finally {
+    //   setDeletingOrder(null);
+    // }
   };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(orders.map(order => order.order_id));
+      setSelectedOrders(orders.map((order) => order.order_id));
     } else {
       setSelectedOrders([]);
     }
@@ -117,27 +132,31 @@ const OrdersTable = ({
 
   const handleSelectOrder = (orderId: string, checked: boolean) => {
     if (checked) {
-      setSelectedOrders(prev => [...prev, orderId]);
+      setSelectedOrders((prev) => [...prev, orderId]);
     } else {
-      setSelectedOrders(prev => prev.filter(id => id !== orderId));
+      setSelectedOrders((prev) => prev.filter((id) => id !== orderId));
     }
   };
 
   const handleSendSelected = () => {
-    const selectedOrdersData = orders.filter(order => 
+    const selectedOrdersData = orders.filter((order) =>
       selectedOrders.includes(order.order_id)
     );
     onSendBulkPaymentLinks(selectedOrdersData);
   };
 
-  const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
-  const isIndeterminate = selectedOrders.length > 0 && selectedOrders.length < orders.length;
+  const isAllSelected =
+    orders.length > 0 && selectedOrders.length === orders.length;
+  const isIndeterminate =
+    selectedOrders.length > 0 && selectedOrders.length < orders.length;
 
   if (loading) {
     return (
       <div className="text-center py-6 sm:py-8">
         <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="text-gray-600 mt-2 text-sm sm:text-base">جاري تحميل الطلبات...</p>
+        <p className="text-gray-600 mt-2 text-sm sm:text-base">
+          جاري تحميل الطلبات...
+        </p>
       </div>
     );
   }
@@ -152,7 +171,6 @@ const OrdersTable = ({
 
   return (
     <div className="w-full">
-      {/* Bulk Actions */}
       {orders.length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
@@ -185,7 +203,6 @@ const OrdersTable = ({
         </div>
       )}
 
-      {/* Table for larger screens */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-gray-50">
@@ -215,13 +232,18 @@ const OrdersTable = ({
           </thead>
           <tbody className="divide-y divide-gray-200">
             {orders.map((order, index) => (
-              <tr key={order._id} className="hover:bg-gray-50 transition-colors">
+              <tr
+                key={order._id}
+                className="hover:bg-gray-50 transition-colors"
+              >
                 <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={selectedOrders.includes(order.order_id)}
-                      onChange={(e) => handleSelectOrder(order.order_id, e.target.checked)}
+                      onChange={(e) =>
+                        handleSelectOrder(order.order_id, e.target.checked)
+                      }
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                     />
                     <span>{index + 1}</span>
@@ -271,10 +293,14 @@ const OrdersTable = ({
                 <input
                   type="checkbox"
                   checked={selectedOrders.includes(order.order_id)}
-                  onChange={(e) => handleSelectOrder(order.order_id, e.target.checked)}
+                  onChange={(e) =>
+                    handleSelectOrder(order.order_id, e.target.checked)
+                  }
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <span className="text-sm font-medium text-gray-900">#{index + 1}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  #{index + 1}
+                </span>
               </label>
               <button
                 onClick={() => deleteOrder(order.order_id)}
@@ -292,11 +318,15 @@ const OrdersTable = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">الوصف</span>
-                <span className="text-gray-700 truncate">{order.description}</span>
+                <span className="text-gray-700 truncate">
+                  {order.description}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">السعر</span>
-                <span className="text-green-600 font-semibold">{order.price} ريال</span>
+                <span className="text-green-600 font-semibold">
+                  {order.price} ريال
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">الكمية</span>
@@ -304,7 +334,9 @@ const OrdersTable = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">الحالة</span>
-                <span className="text-gray-700">{order.status || "قيد المعالجة"}</span>
+                <span className="text-gray-700">
+                  {order.status || "قيد المعالجة"}
+                </span>
               </div>
             </div>
           </div>

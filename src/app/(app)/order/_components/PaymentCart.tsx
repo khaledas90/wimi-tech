@@ -27,6 +27,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const token = Cookies.get("token_admin");
+  const phone = Cookies.get("phone");
   const router = useRouter();
 
   const calculateTotal = () => {
@@ -55,11 +56,12 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
         if (method === "invoice") {
           const firstOrder = orderData.orders[0];
+          console.log(firstOrder);
 
           const response = await axios.post(
             `https://backendb2b.kadinabiye.com/fatora/create-payment`,
             {
-              phoneNumber: firstOrder.phoneNumber,
+              phoneNumber: phone,
               productId: orderData._id,
               amount: totalAmount,
             },
@@ -192,7 +194,9 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
                 <FileText className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 text-right">
-                <h3 className="font-bold text-gray-900">فاتورة</h3>
+                <h3 className="font-bold text-gray-900">
+                  دفع بالبطاقه الائتمانيه
+                </h3>
                 <p className="text-sm text-gray-600">دفع فوري أو لاحق</p>
               </div>
             </div>

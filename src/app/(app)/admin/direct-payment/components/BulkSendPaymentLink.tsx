@@ -36,7 +36,7 @@ const BulkSendPaymentLink = ({
     name: "",
   });
   const [sending, setSending] = useState(false);
-
+  const [orderId, setOrderId] = useState("");
   // Calculate total amount for all orders
   const totalAmount = orders.reduce(
     (sum, order) => sum + order.price * order.quantity,
@@ -81,24 +81,21 @@ const BulkSendPaymentLink = ({
 
     try {
       const token = Cookies.get("token_admin");
-
-      // Prepare orders data for bulk sending
       const ordersData = orders.map((order) => ({
         orderId: order.order_id,
         amount: order.price * order.quantity,
+        description: order.description,
         title: order.title,
         quantity: order.quantity,
         price: order.price,
+        status: "pending",
       }));
 
       const response = await axios.post(
-        `${BaseUrl}direct-payment/send-link`,
-        {
-          phoneNumber: formData.phoneNumber,
-          name: formData.name,
+        `${BaseUrl}direct-payment/orders`,
+        JSON.stringify({
           orders: ordersData,
-          totalAmount: totalAmount,
-        },
+        }),
         {
           headers: {
             "Content-Type": "application/json",
@@ -106,9 +103,20 @@ const BulkSendPaymentLink = ({
           },
         }
       );
-
+      console.log(response);
+      // (response.data._id);
       if (response.data.success) {
         toast.success(`تم إرسال ${orders.length} رابط دفع بنجاح 🎉`);
+        await axios.post(
+          `${BaseUrl}direct-payment/send-link`,
+          {
+            orderId: response.data.data._id,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
         onLinkSent();
         onClose();
       } else {

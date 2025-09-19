@@ -10,32 +10,33 @@ import Cookies from "js-cookie";
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
+  phoneNumber: string;
   onProductAdded: () => void;
 }
 
 const AddProductModal = ({
   isOpen,
   onClose,
+  phoneNumber,
   onProductAdded,
 }: AddProductModalProps) => {
   const [productFormData, setProductFormData] = useState<Creatproduct>({
     title: "",
     description: "",
-    quantity: 0, // 👈 موجود
+    quantity: 0,
     price: "",
     category: "",
     images: "",
-    phoneNumber: "",
+    phoneNumber: phoneNumber,
   });
   const [addingProduct, setAddingProduct] = useState(false);
 
-  // Form fields configuration
   const productFields: FieldForm[] = [
     {
       name: "title",
-      label: "عنوان المنتج",
+      label: "اسم المنتج",
       type: "text",
-      placeholder: "مثلاً: اشتراك شهري",
+      placeholder: "مثلاً: ساعة نسائية",
       requierd: true,
     },
     {
@@ -53,7 +54,7 @@ const AddProductModal = ({
       requierd: true,
     },
     {
-      name: "quantity", // 👈 أضفنا الكمية
+      name: "quantity",
       label: "الكمية",
       type: "number",
       placeholder: "مثلاً: 10",
@@ -68,25 +69,21 @@ const AddProductModal = ({
     },
   ];
 
-  // Handle field changes
   const handleProductFormChange = (updatedData: Record<string, any>) => {
     setProductFormData((prev) => ({ ...prev, ...updatedData }));
   };
 
-  // Submit new product
   const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAddingProduct(true);
 
     try {
       const newProduct = {
-        _id: `PROD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         title: productFormData.title,
         description: productFormData.description,
         price: Number(productFormData.price),
         quantity: Number(productFormData.quantity),
-        phoneNumber: productFormData.phoneNumber,
-        createdAt: new Date().toISOString(),
+        phoneNumber: productFormData.phoneNumber || phoneNumber,
       };
 
       const existingProductsJson = Cookies.get("direct_payment_products");
@@ -94,10 +91,8 @@ const AddProductModal = ({
         ? JSON.parse(existingProductsJson)
         : [];
 
-      // Add new product
       const updatedProducts = [...existingProducts, newProduct];
 
-      // Save to cookies (30 days expiry)
       Cookies.set("direct_payment_products", JSON.stringify(updatedProducts), {
         expires: 30,
       });

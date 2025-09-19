@@ -22,6 +22,7 @@ import ProductForm from "./components/ProductForm";
 import SendPaymentLink from "./components/SendPaymentLink";
 import BulkSendPaymentLink from "./components/BulkSendPaymentLink";
 import OrdersTable from "./components/OrdersTable";
+import AddProductModal from "./components/AddProductModal";
 
 interface UserInfo {
   _id: string;
@@ -124,7 +125,11 @@ const DirectPaymentPage = () => {
     toast.success("تم إرسال روابط الدفع بنجاح");
   };
 
-  const openSendLinkModal = (orderId: string, quantity: number, price: number) => {
+  const openSendLinkModal = (
+    orderId: string,
+    quantity: number,
+    price: number
+  ) => {
     setSelectedOrderId(orderId);
     setSelectedQuantity(quantity);
     setSelectedPrice(price);
@@ -136,7 +141,7 @@ const DirectPaymentPage = () => {
       toast.error("يرجى تحديد طلب واحد على الأقل");
       return;
     }
-    
+
     setSelectedOrdersForBulk(selectedOrders);
     setShowBulkSendModal(true);
   };
@@ -163,7 +168,9 @@ const DirectPaymentPage = () => {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] bg-clip-text text-transparent mb-2">
                 المدفوعات المباشرة
               </h1>
-              <p className="text-sm sm:text-base text-gray-600">إدارة الطلبات والمدفوعات المباشرة</p>
+              <p className="text-sm sm:text-base text-gray-600">
+                إدارة الطلبات والمدفوعات المباشرة
+              </p>
             </div>
 
             <div className="flex justify-center mt-4 sm:mt-6">
@@ -220,7 +227,9 @@ const DirectPaymentPage = () => {
                 <h2 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] bg-clip-text text-transparent">
                   البحث عن العميل
                 </h2>
-                <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">ادخل رقم هاتف العميل للبحث</p>
+                <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
+                  ادخل رقم هاتف العميل للبحث
+                </p>
               </div>
 
               <div className="max-w-md mx-auto">
@@ -398,14 +407,21 @@ const DirectPaymentPage = () => {
           )}
         </div>
 
-        {showAddProductModal && (
+        {/* {showAddProductModal && (
           <ProductForm
             onProductAdded={handleProductAdded}
             onClose={() => setShowAddProductModal(false)}
             phoneNumber={dataUser?.phoneNumber || phoneNumber}
           />
+        )} */}
+        {showAddProductModal && (
+          <AddProductModal
+            onProductAdded={handleProductAdded}
+            isOpen={showAddProductModal}
+            onClose={() => setShowAddProductModal(false)}
+            phoneNumber={dataUser?.phoneNumber || phoneNumber}
+          />
         )}
-
         {showSendLinkModal && (
           <SendPaymentLink
             phoneNumber={dataUser?.phoneNumber || phoneNumber}
