@@ -7,6 +7,7 @@ interface Order {
   description: string;
   price: number;
   phoneNumber: string;
+  quantity: number;
   order_id: string;
   status: string;
 }
@@ -39,7 +40,7 @@ export function OrderCard({ order }: OrderCardProps) {
               <div>
                 <p className="text-xs text-muted-foreground">رقم الهاتف</p>
                 <p className="font-semibold text-foreground">
-                  {order.phoneNumber}
+                  {order.phoneNumber || "غير متوفر"}
                 </p>
               </div>
             </div>
@@ -58,11 +59,34 @@ export function OrderCard({ order }: OrderCardProps) {
           </div>
         </div>
 
-        <div className="lg:w-32 flex flex-col items-center justify-center bg-gradient-to-br from-primary-light to-primary-light/50 rounded-xl p-4">
-          <div className="text-3xl font-bold text-primary mb-1">
-            {order.price}
+        <div className="lg:w-32 flex flex-row lg:flex-col  items-center justify-around bg-gradient-to-br from-primary-light to-primary-light/50 rounded-xl p-4">
+          <div className="">
+            <span>سعر القطعه</span>
+            <div className="flex">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {order.price}
+              </div>
+              <div className="text-sm text-primary/70">ر.س</div>
+            </div>
           </div>
-          <div className="text-sm text-primary/70">ر.س</div>
+          <div className="">
+            <span>الكميه</span>
+            <div className="flex">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {order.quantity}
+              </div>
+              <div className="text-sm text-primary/70">قطعه</div>
+            </div>
+          </div>
+          <div className="">
+            <span>الاجمالي</span>
+            <div className="flex">
+              <div className="text-2xl font-bold text-primary mb-1">
+                {order.quantity * order.price}
+              </div>
+              <div className="text-sm text-primary/70">ر.س</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
