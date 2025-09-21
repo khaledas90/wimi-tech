@@ -14,6 +14,7 @@ interface PaymentCardProps {
       phoneNumber: string;
       price: number;
       _id: string;
+      quantity: number;
       title: string;
     }>;
   };
@@ -32,7 +33,10 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
   const calculateTotal = () => {
     if (!orderData) return 0;
-    return orderData.orders.reduce((total, order) => total + order.price, 0);
+    return orderData.orders.reduce(
+      (total, order) => total + order.price * order.quantity,
+      0
+    );
   };
 
   const handlePayment = (method: "tamara" | "invoice") => {
@@ -64,6 +68,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
               phoneNumber: phone,
               productId: orderData._id,
               amount: totalAmount,
+              total: totalAmount,
             },
             {
               headers: {
