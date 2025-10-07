@@ -106,12 +106,15 @@ const BulkSendPaymentLink = ({
           },
         }
       );
+      console.log(response.data.data._id);
+
       if (response.data.success) {
         toast.success(`تم إرسال ${orders.length} رابط دفع بنجاح 🎉`);
         await axios.post(
-          `${BaseUrl}direct-payment/send-link`,
+          `${BaseUrl}send-sms`,
           {
-            orderId: response.data.data._id,
+            link: `https://wimi.sa/checkout-payment/${response.data.data._id}`,
+            phoneNumber: formData.phoneNumber,
           },
           {
             headers: { "Content-Type": "application/json" },
@@ -213,7 +216,8 @@ const BulkSendPaymentLink = ({
               ) : (
                 <>
                   <Send size={16} className="sm:w-5 sm:h-5" />
-                  إرسال ({orders.length})
+                  إرسال (
+                  {orders.filter((or) => or.phoneNumber == phoneNumber).length})
                 </>
               )}
             </button>

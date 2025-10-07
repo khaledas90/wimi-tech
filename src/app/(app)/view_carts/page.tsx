@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import { LoginRequiredModal } from "@/app/components/ui/Pop-up-login";
 import Link from "next/link";
 import mayser from "../../../../public/asset/images/ميسر.png";
+import PaymentCard from "../checkout-payment/_components/PaymentCart";
 interface ProductWithType {
   _id: string;
   title: string;
@@ -64,6 +65,9 @@ interface CartAndOrdersResponseshoping {
 export default function Favorite() {
   const [allProducts, setAllProducts] = useState<ProductWithType[]>([]);
   const [register, setRegister] = useState<boolean>(false);
+  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductWithType | null>(null);
   const url = `${BaseUrl}users/shopping`;
   const deleteorder = `${BaseUrl}users/cancelled-order/`;
   const urlcreate = `${BaseUrl}fatora/create-payment`;
@@ -103,8 +107,8 @@ export default function Favorite() {
             quantity: order.quantity,
             totalPrice: order.totalPrice,
             orderId: order._id,
-            status: "",
-            paymentState: "",
+            status: order.status || "Pending",
+            paymentState: order.paymentState || "Pending",
           }));
 
         setAllProducts([...cartWithType, ...ordersWithType]);
@@ -127,34 +131,78 @@ export default function Favorite() {
         return;
       }
 
-      const totalPrice = unitPrice * quantity;
+      const totalPrice = quantity * unitPrice;
 
+      // Call /orders API to create order
       const res = await axios.post(
-        urlcreate,
+        `${BaseUrl}orders`,
         {
-          amount: totalPrice,
-          phoneNumber: Cookies.get("phone"),
-          productId: productId,
+          productId,
+          quantity,
+          totalPrice,
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            api_key: "E4B73FEE-F492-4607-A38D-852B0EBC91C9",
+            "Content-Type": "application/json",
           },
         }
       );
 
-      if (res.data.data.result) {
-        window.open(res.data.data.result.checkout_url, "_blank");
-      } else {
-        toast.error(res.data.data.message);
-      }
+      if (res.data.success) {
+        toast.success("تم إنشاء الطلب بنجاح");
 
-      setAllProducts((prev) =>
-        prev.filter((p) => !(p._id === productId && p.type === "cart"))
-      );
+        // Remove from cart and add to orders
+        setAllProducts((prev) => {
+          const updatedProducts = prev.filter(
+            (p) => !(p._id === productId && p.type === "cart")
+          );
+
+          // Find the product to add to orders
+          const product = prev.find(
+            (p) => p._id === productId && p.type === "cart"
+          );
+          if (product) {
+            const orderProduct: ProductWithType = {
+              ...product,
+              type: "order",
+              quantity: quantity,
+              totalPrice: totalPrice,
+              status: "Pending",
+              paymentState: "Pending",
+              orderId: res.data.data._id || productId,
+            };
+            updatedProducts.push(orderProduct);
+          }
+
+          return updatedProducts;
+        });
+      } else {
+        toast.error(res.data.message || "فشل في إنشاء الطلب");
+      }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "حدث خطأ أثناء الشراء ❌");
+      console.error("Error creating order:", error);
+      toast.error(error.response?.data?.message || "حدث خطأ أثناء إنشاء الطلب");
+    }
+  };
+
+  const handlePayNow = (
+    productId: string,
+    quantity: number,
+    unitPrice: number
+  ) => {
+    if (!token) {
+      setRegister(true);
+      return;
+    }
+
+    // Find the product in allProducts
+    const product = allProducts.find(
+      (p) => p._id === productId && p.type === "order"
+    );
+    if (product) {
+      setSelectedProduct(product);
+      setShowPaymentModal(true);
     }
   };
 
@@ -212,6 +260,7 @@ export default function Favorite() {
       })
     );
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FAF5FF] via-white to-[#F5F0FF] p-6 mt-12">
       <SmartNavbar />
@@ -261,7 +310,6 @@ export default function Favorite() {
                           key={`${product._id}-${index}`}
                           className="hover:bg-purple-50 transition"
                         >
-                          {/* صورة المنتج */}
                           <td className="px-4 py-3 border-b">
                             {product.images?.[0] ? (
                               <Image
@@ -279,12 +327,9 @@ export default function Favorite() {
                             )}
                           </td>
 
-                          {/* الاسم */}
                           <td className="px-4 py-3 border-b font-bold">
                             {product.title}
                           </td>
-
-                          {/* الكمية + أزرار */}
                           <td className="px-4 py-3 border-b">
                             <div className="flex items-center gap-2">
                               <button
@@ -384,6 +429,9 @@ export default function Favorite() {
                       <th className="px-4 py-2 text-right text-sm font-semibold border-b">
                         حالة الدفع
                       </th>
+                      <th className="px-4 py-2 text-right text-sm font-semibold border-b">
+                        الدفع
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="text-gray-700">
@@ -436,6 +484,28 @@ export default function Favorite() {
                                 : "مدفوع"}
                             </span>
                           </td>
+                          <td className="px-4 py-3 border-b">
+                            {product.paymentState === "Pending" ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handlePayNow(
+                                    product._id,
+                                    product.quantity || 1,
+                                    product.price
+                                  )
+                                }
+                                className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-md hover:shadow-lg transition duration-200"
+                              >
+                                <ShoppingCart size={16} />
+                                <span>ادفع الآن</span>
+                              </button>
+                            ) : (
+                              <span className="text-green-600 font-semibold text-sm">
+                                مدفوع ✓
+                              </span>
+                            )}
+                          </td>
                         </tr>
                       ))}
                   </tbody>
@@ -446,6 +516,76 @@ export default function Favorite() {
         </section>
 
         <LoginRequiredModal show={register} />
+
+        {showPaymentModal && selectedProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">
+                    اختر طريقة الدفع
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowPaymentModal(false);
+                      setSelectedProduct(null);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    تفاصيل المنتج
+                  </h4>
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={selectedProduct.images?.[0] || mayser}
+                      alt={selectedProduct.title}
+                      width={60}
+                      height={60}
+                      className="rounded-lg object-cover"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {selectedProduct.title}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        الكمية: {selectedProduct.quantity || 1}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        السعر: {selectedProduct.price} ر.س
+                      </p>
+                      <p className="font-semibold text-purple-600">
+                        الإجمالي:{" "}
+                        {selectedProduct.price *
+                          (selectedProduct.quantity || 1)}{" "}
+                        ر.س
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <PaymentCard
+                  orderData={{
+                    _id: selectedProduct.orderId || selectedProduct._id,
+                    orders: [
+                      {
+                        phoneNumber: Cookies.get("phone") || "",
+                        price: selectedProduct.price,
+                        _id: selectedProduct.orderId || selectedProduct._id,
+                        quantity: selectedProduct.quantity || 1,
+                        title: selectedProduct.title,
+                      },
+                    ],
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
     </div>
   );

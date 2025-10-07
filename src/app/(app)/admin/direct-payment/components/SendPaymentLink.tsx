@@ -57,12 +57,9 @@ const SendPaymentLink = ({
 
     try {
       const response = await axios.post(
-        `${BaseUrl}direct-payment/send-link`,
+        `${BaseUrl}send-sms`,
         {
           phoneNumber: formData.phoneNumber,
-          name: formData.name,
-          amount,
-          orderId: orderId,
         },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -90,7 +87,9 @@ const SendPaymentLink = ({
         <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
           إرسال رابط الدفع
         </h3>
-        <p className="text-sm sm:text-base text-gray-600">إرسال رابط الدفع للعميل</p>
+        <p className="text-sm sm:text-base text-gray-600">
+          إرسال رابط الدفع للعميل
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">

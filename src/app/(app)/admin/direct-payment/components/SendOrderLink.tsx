@@ -48,11 +48,9 @@ const SendOrderLink = ({
     setSending(true);
     try {
       const response = await axios.post(
-        `${BaseUrl}direct-payment/send-link`,
+        `${BaseUrl}send-sms`,
         {
-          phoneNumber,
-          orderId: orderId,
-          name: formData.name,
+          phoneNumber: phoneNumber,
         },
         {
           headers: { "Content-Type": "application/json" },

@@ -59,11 +59,8 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           .join(", ");
 
         if (method === "invoice") {
-          const firstOrder = orderData.orders[0];
-          console.log(firstOrder);
-
           const response = await axios.post(
-            `https://backendb2b.kadinabiye.com/fatora/create-payment`,
+            `https://backendb2b.kadinabiye.com/payment-order/create-payment`,
             {
               phoneNumber: phone,
               productId: orderData._id,
@@ -72,30 +69,40 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             },
             {
               headers: {
-                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
                 "Content-Type": "application/json",
+                "Accept-Language": "ar",
+                Authorization: `Bearer ${token}`,
               },
             }
           );
 
           if (response.data.success) {
-            setSuccess("تم إنشاء الفاتورة بنجاح");
-            window.open(response.data.data.result.checkout_url, "_blank");
+            console.log(response.data.result);
+            setSuccess("تم إنشاء payment-order بنجاح");
+            if (response.data.data?.result?.checkout_url) {
+              window.open(response.data.data.result.checkout_url, "_blank");
+              setSuccess("تم إنشاء رابط الدفع بنجاح");
+            } else {
+              setError("لم يتم العثور على رابط الدفع");
+            }
           } else {
             setError(response.data.message || "فشل في إنشاء الفاتورة");
           }
         } else if (method === "tamara") {
           const response = await axios.post(
-            `https://backendb2b.kadinabiye.com/fatora/tamara`,
+            `https://backendb2b.kadinabiye.com/payment-order/tamara`,
             {
               orderId: orderData._id,
-              total: totalAmount,
+              total: totalAmount.toString(),
               disription: orderDescription,
             },
             {
               headers: {
-                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
                 "Content-Type": "application/json",
+                "Accept-Language": "ar",
+                Authorization: `Bearer ${token}`,
               },
             }
           );

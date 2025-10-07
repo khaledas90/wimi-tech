@@ -125,7 +125,11 @@ const OrdersTable = ({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedOrders(orders.map((order) => order.order_id));
+      setSelectedOrders(
+        orders
+          .filter((or) => or.phoneNumber == phoneNumber)
+          .map((order) => order.order_id)
+      );
     } else {
       setSelectedOrders([]);
     }
