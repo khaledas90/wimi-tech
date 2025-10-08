@@ -7,6 +7,10 @@ import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { Card } from "../../checkout-payment/_components/Card";
+import Image from "next/image";
+import EmkanIcon from "../../../assets/emkan.png";
+import FatoraIcon from "../../../assets/fatora.jpg";
+import TamaraIcon from "../../../assets/tamara.webp";
 
 interface PaymentCardProps {
   orderData?: {
@@ -216,8 +220,15 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-200">
+                <Image
+                  src={TamaraIcon}
+                  alt="تمارا"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
               <div className="flex-1 text-right">
                 <h3 className="font-bold text-gray-900">تمارا</h3>
@@ -238,8 +249,15 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-200">
+                <Image
+                  src={EmkanIcon}
+                  alt="إمكان"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
               <div className="flex-1 text-right">
                 <h3 className="font-bold text-gray-900">إمكان</h3>
@@ -258,8 +276,15 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-200">
+                <Image
+                  src={FatoraIcon}
+                  alt="فاتورة"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                  unoptimized
+                />
               </div>
               <div className="flex-1 text-right">
                 <h3 className="font-bold text-gray-900">
