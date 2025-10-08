@@ -83,7 +83,7 @@ export default function AuthPage() {
       Cookies.set("phone", user.phoneNumber);
 
       toast.success("تم تسجيل الدخول بنجاح 🎉");
-      router.push("/auth");
+      router.push("/");
     } catch (error: any) {
       console.error("Login error:", error);
 
@@ -113,6 +113,7 @@ export default function AuthPage() {
       const { phoneNumber } = res.data as any;
       Cookies.set("phone", phoneNumber);
       toast.success("تم إنشاء الحساب بنجاح 🎉");
+      router.push("/");
       try {
         await Postresponse(
           `${BaseUrl}users/verify-otp`,
