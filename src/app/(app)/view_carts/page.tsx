@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import { LoginRequiredModal } from "@/app/components/ui/Pop-up-login";
 import Link from "next/link";
 import mayser from "../../../../public/asset/images/ميسر.png";
-import PaymentCard from "../checkout-payment/_components/PaymentCart";
+import PaymentCard from "./_components/PaymentCart";
 interface ProductWithType {
   _id: string;
   title: string;

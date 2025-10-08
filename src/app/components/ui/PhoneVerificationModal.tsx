@@ -16,6 +16,7 @@ interface PhoneVerificationModalProps {
   userId?: string;
   endpointPath?: string;
   redirectTo?: string;
+  canClose?: boolean;
 }
 
 const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
@@ -25,6 +26,7 @@ const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   userId,
   endpointPath = "users/verify-otp",
   redirectTo = "/",
+  canClose = true,
 }) => {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -125,7 +127,11 @@ const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50">
+    <Dialog
+      open={isOpen}
+      onClose={canClose ? onClose : () => {}}
+      className="fixed inset-0 z-50"
+    >
       <div className="flex items-center justify-center min-h-screen px-4 relative">
         <div
           className="fixed inset-0 bg-black bg-opacity-40"
@@ -206,13 +212,15 @@ const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
             )}
           </div>
 
-          <button
-            onClick={onClose}
-            className="mt-4 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 mx-auto"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            العودة
-          </button>
+          {canClose && (
+            <button
+              onClick={onClose}
+              className="mt-4 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              العودة
+            </button>
+          )}
         </Dialog.Panel>
       </div>
     </Dialog>

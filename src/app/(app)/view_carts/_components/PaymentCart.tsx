@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Card } from "./Card";
+
 import { CheckCircle, CreditCard, Download, FileText } from "lucide-react";
-import { Button } from "./Button";
+
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
+import { Card } from "../../checkout-payment/_components/Card";
 
 interface PaymentCardProps {
   orderData?: {
@@ -60,7 +61,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
         if (method === "invoice") {
           const response = await axios.post(
-            `https://backendb2b.kadinabiye.com/fatora/create-payment`,
+            `https://backendb2b.kadinabiye.com/payment-order/create-payment`,
             {
               phoneNumber: phone,
               productId: orderData._id,
@@ -91,7 +92,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           }
         } else if (method === "tamara") {
           const response = await axios.post(
-            `https://backendb2b.kadinabiye.com/fatora/tamara`,
+            `https://backendb2b.kadinabiye.com/payment-order/tamara`,
             {
               orderId: orderData._id,
               total: totalAmount.toString(),
@@ -120,7 +121,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           }
         } else if (method === "emkan") {
           const response = await axios.post(
-            `https://backendb2b.kadinabiye.com/fatora/emkan`,
+            `https://backendb2b.kadinabiye.com/payment-order/emkan`,
             {
               phoneNumber: phone,
               total: totalAmount,

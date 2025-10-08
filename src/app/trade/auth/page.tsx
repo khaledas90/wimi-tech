@@ -117,15 +117,28 @@ export default function AuthTrader() {
         toast.success("تم تسجيل الدخول بنجاح 🎉");
         setTimeout(() => {
           window.location.href = "/admin";
-        }, 500);
+        }, 100);
       } else if (res.status === 401) {
         toast.error("بيانات الدخول غير صحيحة ❌");
       } else {
         toast.error(`خطأ: ${res.status}`);
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("فشل في تسجيل الدخول");
+    } catch (error: any) {
+      console.error("Trader login error:", error);
+
+      if (
+        error?.response?.data?.message ===
+        "Phone number not verified. OTP sent."
+      ) {
+        toast.error("رقم الهاتف غير محقق. تم إرسال رمز التحقق.");
+        setVerifyModalOpen(true);
+      } else if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error?.response?.status === 401) {
+        toast.error("بيانات الدخول غير صحيحة ❌");
+      } else {
+        toast.error("فشل في تسجيل الدخول");
+      }
     }
   };
 
@@ -165,9 +178,14 @@ export default function AuthTrader() {
       } else {
         toast.error(res.data.message || "خطأ أثناء التسجيل");
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("حدث خطأ في عملية التسجيل");
+    } catch (error: any) {
+      console.error("Trader register error:", error);
+
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("حدث خطأ في عملية التسجيل");
+      }
     }
   };
 
@@ -288,9 +306,10 @@ export default function AuthTrader() {
         <PhoneVerificationModal
           isOpen={verifyModalOpen}
           onClose={() => setVerifyModalOpen(false)}
-          phoneNumber={registerData.phoneNumber}
+          phoneNumber={registerData.phoneNumber || loginData.phoneNumber}
           endpointPath="traders/verify-otp"
           redirectTo="/admin"
+          canClose={false}
         />
       )}
     </>

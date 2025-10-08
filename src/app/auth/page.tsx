@@ -77,15 +77,27 @@ export default function AuthPage() {
         loginData
       );
       const { token, user } = res.data;
+      console.log(res);
 
       Cookies.set("token", token, { expires: 1 });
       Cookies.set("phone", user.phoneNumber);
 
       toast.success("تم تسجيل الدخول بنجاح 🎉");
       router.push("/auth");
-    } catch (error) {
-      toast.error("فشل في تسجيل الدخول");
-      console.log(error);
+    } catch (error: any) {
+      console.error("Login error:", error);
+
+      if (
+        error?.response?.data?.message ===
+        "Phone number not verified. OTP sent."
+      ) {
+        toast.error("رقم الهاتف غير محقق. تم إرسال رمز التحقق.");
+        setVerifyModalOpen(true);
+      } else if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("فشل في تسجيل الدخول");
+      }
     }
   };
 
@@ -111,9 +123,14 @@ export default function AuthPage() {
         console.error("Failed to send OTP after signup:", err);
       }
       setVerifyModalOpen(true);
-    } catch (error) {
-      toast.error("فشل في التسجيل");
-      console.log(error);
+    } catch (error: any) {
+      console.error("Register error:", error);
+
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("فشل في التسجيل");
+      }
     }
   };
 
@@ -249,7 +266,8 @@ export default function AuthPage() {
             <PhoneVerificationModal
               isOpen={verifyModalOpen}
               onClose={() => setVerifyModalOpen(false)}
-              phoneNumber={registerData.phoneNumber}
+              phoneNumber={registerData.phoneNumber || loginData.phoneNumber}
+              canClose={false}
             />
           )}
         </Container>
