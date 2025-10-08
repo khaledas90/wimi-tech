@@ -32,7 +32,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const token = Cookies.get("token_admin");
-  const phone = Cookies.get("phone");
+  const phone = orderData?.orders?.[0]?.phoneNumber || Cookies.get("phone");
   const router = useRouter();
 
   const calculateTotal = () => {
@@ -149,26 +149,52 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
               window.open(response.data.data.data.paymentURL, "_blank");
             }
           } else {
-            setError(
-              response.data.message || "فشل في إنشاء رابط الدفع عبر إمكان"
-            );
+            // Handle Emkan specific error structure
+            let errorMessage = "فشل في إنشاء رابط الدفع عبر إمكان";
+
+            if (response.data.message) {
+              if (typeof response.data.message === "string") {
+                errorMessage = response.data.message;
+              } else if (response.data.message.message) {
+                errorMessage = response.data.message.message;
+
+                // Handle specific Emkan error codes
+                if (response.data.message.details?.code === "BNPLO-2001") {
+                  errorMessage =
+                    "المبلغ أقل من 400 ريال. الحد الأدنى للدفع عبر إمكان هو 400 ريال.";
+                }
+              }
+            }
+
+            setError(errorMessage);
           }
         }
       } catch (err: any) {
         console.error(`Error creating ${method} payment:`, err);
+
+        let errorMessage = `حدث خطأ أثناء إنشاء ${
+          method === "tamara"
+            ? "رابط الدفع عبر تمارا"
+            : method === "emkan"
+            ? "رابط الدفع عبر إمكان"
+            : "الفاتورة"
+        }`;
+
         if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError(
-            `حدث خطأ أثناء إنشاء ${
-              method === "tamara"
-                ? "رابط الدفع عبر تمارا"
-                : method === "emkan"
-                ? "رابط الدفع عبر إمكان"
-                : "الفاتورة"
-            }`
-          );
+          if (typeof err.response.data.message === "string") {
+            errorMessage = err.response.data.message;
+          } else if (err.response.data.message.message) {
+            errorMessage = err.response.data.message.message;
+
+            // Handle specific Emkan error codes
+            if (err.response.data.message.details?.code === "BNPLO-2001") {
+              errorMessage =
+                "المبلغ أقل من 400 ريال. الحد الأدنى للدفع عبر إمكان هو 400 ريال.";
+            }
+          }
         }
+
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }

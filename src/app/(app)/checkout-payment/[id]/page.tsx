@@ -36,6 +36,7 @@ export default function OrderDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const token = Cookies.get("token_admin");
+  console.log(orderData);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {

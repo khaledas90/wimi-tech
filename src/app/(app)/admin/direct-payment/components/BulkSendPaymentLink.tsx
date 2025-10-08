@@ -90,6 +90,7 @@ const BulkSendPaymentLink = ({
           description: order.description,
           title: order.title,
           quantity: order.quantity,
+          phoneNumber: order.phoneNumber,
           price: order.price,
           status: "pending",
         }));
