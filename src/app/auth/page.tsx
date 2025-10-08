@@ -18,12 +18,14 @@ import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import Logo from "../../../public/asset/images/ويمي تك.jpg";
 import PhoneVerificationModal from "../components/ui/PhoneVerificationModal";
+import TermsModal from "../components/ui/TermsModal";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [loginData, setLoginData] = useState<Record<string, any>>({});
   const [registerData, setRegisterData] = useState<Record<string, any>>({});
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
   const router = useRouter();
 
   // ===== Login Fields =====
@@ -99,9 +101,12 @@ export default function AuthPage() {
       const { phoneNumber } = res.data as any;
       Cookies.set("phone", phoneNumber);
       toast.success("تم إنشاء الحساب بنجاح 🎉");
-      // Send OTP and open verification modal
       try {
-        await Postresponse(`${BaseUrl}users/verify-otp`, { phoneNumber }, { api_key: ApiKey });
+        await Postresponse(
+          `${BaseUrl}users/verify-otp`,
+          { phoneNumber },
+          { api_key: ApiKey }
+        );
       } catch (err) {
         console.error("Failed to send OTP after signup:", err);
       }
@@ -205,11 +210,17 @@ export default function AuthPage() {
 
                 <p className="text-xs text-gray-500 text-right leading-relaxed">
                   بالضغط على الزر، فأنت توافق على{" "}
-                  <span className="text-purple-600 underline cursor-pointer hover:text-orange-500 transition">
+                  <span
+                    className="text-purple-600 underline cursor-pointer hover:text-orange-500 transition"
+                    onClick={() => setTermsModalOpen(true)}
+                  >
                     شروط الاستخدام
                   </span>{" "}
                   و{" "}
-                  <span className="text-purple-600 underline cursor-pointer hover:text-orange-500 transition">
+                  <span
+                    className="text-purple-600 underline cursor-pointer hover:text-orange-500 transition"
+                    onClick={() => setTermsModalOpen(true)}
+                  >
                     سياسة الخصوصية
                   </span>
                   .
@@ -243,6 +254,12 @@ export default function AuthPage() {
           )}
         </Container>
       </div>
+
+      {/* Terms and Conditions Modal */}
+      <TermsModal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+      />
     </>
   );
 }

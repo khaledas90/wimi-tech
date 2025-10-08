@@ -21,11 +21,13 @@ import image2 from "../../../../public/asset/images/2.jpg";
 import image3 from "../../../../public/asset/images/3.png";
 
 import { Dialog } from "@headlessui/react";
+import TermsModal from "./TermsModal";
 
 const Footer: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const openPolicyModal = (title: string, content: React.ReactNode) => {
     setModalTitle(title);
@@ -308,91 +310,7 @@ const Footer: React.FC = () => {
 
               <li>
                 <button
-                  onClick={() =>
-                    openPolicyModal(
-                      "شروط الاستخدام",
-                      <>
-                        <h2>3. شروط استخدام المنصة</h2>
-
-                        <p>
-                          باستخدامك لمنصة <strong>Wimi Tech</strong>، فإنك توافق
-                          على الالتزام بالشروط والأحكام التالية التي تضمن تجربة
-                          آمنة وعادلة للجميع:
-                        </p>
-
-                        <h3>أهليتك للاستخدام:</h3>
-                        <p>
-                          يجب أن تكون في السن القانوني (18 عامًا فما فوق) ولديك
-                          الأهلية القانونية لإبرام العقود.
-                        </p>
-
-                        <h3>إنشاء الحساب:</h3>
-                        <p>
-                          أنت مسؤول عن الحفاظ على سرية معلومات حسابك وكلمة
-                          المرور، وعن جميع الأنشطة التي تتم تحت حسابك.
-                        </p>
-
-                        <h3>الاستخدام المقبول:</h3>
-                        <ul>
-                          <li>
-                            يجب استخدام المنصة لأغراض مشروعة فقط ووفقًا للأنظمة
-                            المعمول بها في المملكة العربية السعودية.
-                          </li>
-                          <li>
-                            يُمنع أي استخدام احتيالي، مسيء، أو غير قانوني
-                            للمنصة.
-                          </li>
-                          <li>
-                            يُمنع محاولة الوصول غير المصرح به إلى أنظمتنا أو
-                            بيانات المستخدمين الآخرين.
-                          </li>
-                        </ul>
-
-                        <h3>المشتريات والمدفوعات:</h3>
-                        <ul>
-                          <li>
-                            عند إجراء عملية شراء، فإنك توافق على دفع السعر
-                            المعلن للمنتج أو الخدمة، بالإضافة إلى أي رسوم شحن أو
-                            ضرائب مطبقة.
-                          </li>
-                          <li>
-                            أنت توافق على الالتزام بشروط وأحكام مزود خدمة
-                            الدفع/التقسيط الذي تختاره.
-                          </li>
-                        </ul>
-
-                        <h3>المحتوى:</h3>
-                        <p>
-                          جميع المحتويات على المنصة (بما في ذلك النصوص، الصور،
-                          الشعارات) مملوكة لـ <strong>Wimi Tech</strong> أو
-                          للبائعين المرخصين، ومحمية بحقوق الملكية الفكرية.
-                        </p>
-
-                        <h3>حدود المسؤولية:</h3>
-                        <p>
-                          لا تضمن Wimi Tech أن تكون المنصة خالية من الأخطاء أو
-                          الانقطاعات. نحن نسعى لتقديم أفضل خدمة ممكنة، ولكننا لا
-                          نتحمل المسؤولية عن أي أضرار غير مباشرة ناتجة عن
-                          استخدام المنصة. مسؤولية Wimi Tech تقتصر على قيمة
-                          المنتج أو الخدمة التي تم شراؤها.
-                        </p>
-
-                        <h3>التغييرات في الشروط:</h3>
-                        <p>
-                          تحتفظ Wimi Tech بالحق في تعديل هذه الشروط في أي وقت.
-                          سيتم نشر التغييرات على المنصة وستصبح سارية المفعول
-                          فورًا. استمرارك في استخدام المنصة بعد التغييرات يعتبر
-                          موافقة منك عليها.
-                        </p>
-
-                        <h3>القانون الحاكم:</h3>
-                        <p>
-                          تخضع هذه الشروط وتفسر وفقًا لقوانين المملكة العربية
-                          السعودية.
-                        </p>
-                      </>
-                    )
-                  }
+                  onClick={() => setTermsModalOpen(true)}
                   className="hover:text-gray-300 w-full text-right"
                 >
                   شروط الاستخدام
@@ -541,6 +459,11 @@ const Footer: React.FC = () => {
           </Dialog.Panel>
         </div>
       </Dialog>
+
+      <TermsModal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+      />
     </>
   );
 };

@@ -12,7 +12,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import Logo from "../../../../public/asset/images/ويمي تك.jpg";
-import { TermsModal } from "@/app/components/ui/TermsModal";
+import TermsModal from "@/app/components/ui/TermsModal";
 import PhoneVerificationModal from "@/app/components/ui/PhoneVerificationModal";
 
 export default function AuthTrader() {
