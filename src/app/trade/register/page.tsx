@@ -12,7 +12,7 @@ import Logo from "../../../../public/asset/images/ويمي تك.jpg";
 import { BaseUrl, ApiKey } from "@/app/components/Baseurl";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { TermsModal } from "@/app/components/ui/TermsModal";
+import TermsModal from "@/app/components/ui/TermsModal";
 import PhoneVerificationModal from "@/app/components/ui/PhoneVerificationModal";
 
 export default function RegisterPage() {
