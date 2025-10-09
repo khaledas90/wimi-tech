@@ -37,9 +37,11 @@ export const Card: React.FC<CardProps> = ({
         },
       })
       
-      setLove(!loveit)
+      // Toggle the love state
+      const newLoveState = !loveit
+      setLove(newLoveState)
       handellove()
-      toast.success(loveit ? "تم الإزالة من المفضلة" : "تم الإضافة للمفضلة")
+      toast.success(newLoveState ? "تم الإضافة للمفضلة" : "تم الإزالة من المفضلة")
     } catch (error: any) {
       console.error("Error updating favorites:", error)
       toast.error(error.response?.data?.message || "حدث خطأ أثناء تحديث المفضلة")
@@ -87,14 +89,18 @@ export const Card: React.FC<CardProps> = ({
   return (
     <div className="w-full h-full flex flex-col justify-between rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-500 bg-gradient-to-br from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 group">
       
-      {/* زر القلب */}
-      <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm p-1.5 rounded-full cursor-pointer z-40 hover:bg-pink-100 transition-all duration-300 shadow-sm" onClick={handleLoveToggle}>
+      {/* زر القلب المحسن */}
+      <div 
+        className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm p-2 rounded-full cursor-pointer z-40 hover:bg-pink-100 hover:scale-110 transition-all duration-300 shadow-lg border border-pink-200" 
+        onClick={handleLoveToggle}
+        title={loveit ? "إزالة من المفضلة" : "إضافة للمفضلة"}
+      >
         {isAddingToFavorites ? (
-          <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
         ) : loveit ? (
-          <Heart size={16} className="w-4 h-4 sm:w-5 sm:h-5 text-pink-500" fill="#ec4899" stroke="#ec4899" />
+          <Heart size={20} className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 animate-pulse" fill="#ec4899" stroke="#ec4899" />
         ) : (
-          <Heart size={16} className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none" stroke="#6b7280" />
+          <Heart size={20} className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 hover:text-pink-400 transition-colors" fill="none" stroke="#6b7280" />
         )}
       </div>
 
@@ -142,6 +148,26 @@ export const Card: React.FC<CardProps> = ({
                   <ShoppingCart size={14} className="w-3 h-3 sm:w-4 sm:h-4" />
                 )}
                 {isAddingToCart ? 'جاري الإضافة...' : stockQuantity === 0 ? 'غير متوفر' : 'إضافة للسلة'}
+              </button>
+            </div>
+            
+            {/* زر المفضلة في الـ Overlay */}
+            <div className="mt-2 sm:mt-3">
+              <button 
+                onClick={handleLoveToggle}
+                disabled={isAddingToFavorites}
+                className={`w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-1 sm:gap-2 ${
+                  isAddingToFavorites ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isAddingToFavorites ? (
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : loveit ? (
+                  <Heart size={14} className="w-3 h-3 sm:w-4 sm:h-4" fill="white" stroke="white" />
+                ) : (
+                  <Heart size={14} className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="white" />
+                )}
+                {isAddingToFavorites ? 'جاري التحديث...' : loveit ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
               </button>
             </div>
           </div>

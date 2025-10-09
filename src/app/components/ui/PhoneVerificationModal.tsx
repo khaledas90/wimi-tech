@@ -90,7 +90,7 @@ const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
 
     setIsLoading(true);
     try {
-      const verificationData = { phoneNumber, otp: otpString, userId };
+      const verificationData = { phoneNumber, otp: otpString };
       const url = `${BaseUrl}${endpointPath}`;
       await Postresponse(url, verificationData, { api_key: ApiKey });
 
@@ -110,7 +110,8 @@ const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
 
     setIsLoading(true);
     try {
-      const resendData = { phoneNumber, userId };
+      // For traders, we need to send OTP to the phone number
+      const resendData = { phoneNumber };
       const url = `${BaseUrl}${endpointPath}`;
       await Postresponse(url, resendData, { api_key: ApiKey });
 
