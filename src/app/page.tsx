@@ -127,9 +127,6 @@ export default function HomePage() {
         setregister(true);
         return;
       }
-      else {
-        setregister(false);
-      }
       // The actual favorite handling is now done in the Card component
       // This function is just for state management
       setadd(true);
@@ -168,7 +165,7 @@ export default function HomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             {products.map((product, index) => (
               <div key={index} className="transition-all duration-300">
-                <Card {...product} handellove={() => { handelfavorit(String(product._id)); setadd(true); }} />
+                <Card {...product} handellove={() => handelfavorit(String(product._id))} />
               </div>
             ))}
           </div>

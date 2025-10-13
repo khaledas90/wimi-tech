@@ -97,6 +97,18 @@ export default function AuthPage() {
         "Phone number not verified. OTP sent."
       ) {
         toast.error("رقم الهاتف غير محقق. تم إرسال رمز التحقق.");
+        // Automatically send OTP for verification
+        try {
+          await Postresponse(
+            `${BaseUrl}users/verify-otp`,
+            { phoneNumber: loginData.phoneNumber },
+            { api_key: ApiKey }
+          );
+          toast.success("تم إرسال رمز التحقق إلى رقم هاتفك");
+        } catch (otpError) {
+          console.error("Failed to send OTP:", otpError);
+          toast.error("فشل في إرسال رمز التحقق");
+        }
         setVerifyModalOpen(true);
       } else if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -122,14 +134,18 @@ export default function AuthPage() {
       await refreshUserData();
 
       toast.success("تم إنشاء الحساب بنجاح 🎉");
+      
+      // Send OTP to user and open verification modal
       try {
         await Postresponse(
           `${BaseUrl}users/verify-otp`,
           { phoneNumber },
           { api_key: ApiKey }
         );
+        toast.success("تم إرسال رمز التحقق إلى رقم هاتفك");
       } catch (err) {
         console.error("Failed to send OTP after signup:", err);
+        toast.error("فشل في إرسال رمز التحقق");
       }
       setVerifyModalOpen(true);
     } catch (error: any) {
@@ -276,6 +292,8 @@ export default function AuthPage() {
               isOpen={verifyModalOpen}
               onClose={() => setVerifyModalOpen(false)}
               phoneNumber={registerData.phoneNumber || loginData.phoneNumber}
+              endpointPath="users/verify-otp"
+              redirectTo="/"
               canClose={false}
             />
           )}
