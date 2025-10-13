@@ -23,9 +23,6 @@ import {
   IdCard,
   Image as ImageIcon,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import Image from "next/image";
-import Logo from "../../../../../public/asset/images/ويمي تك.jpg";
 
 interface TraderProfile {
   UID: string;
@@ -36,17 +33,23 @@ interface TraderProfile {
   verify: boolean;
   address: string;
   googleMapLink: string;
+  describtion?: string;
+  nameOfbussinessActor?: string;
   block: boolean;
   waiting: boolean;
   nationalId: string;
   imageOftrading: string;
+  specialNumber?: string;
+  imageOfcertificate?: string;
   nationalId2: string;
   imageOfnationalId: string;
   Iban: string;
   nameOfbank: string;
   nameOfperson: string;
   imageOfiban: string;
+  logo?: string;
   imageOffront: string;
+  billImage?: string;
   otp: string;
   createdAt: string;
 }
@@ -313,8 +316,57 @@ export default function TraderProfilePage() {
                   </div>
                 </div>
               </div>
+
+              {trader.describtion && (
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    وصف النشاط التجاري
+                  </label>
+                  <div className="text-sm text-gray-900 font-medium bg-gray-50 p-3 rounded-lg">
+                    {trader.describtion}
+                  </div>
+                </div>
+              )}
+
+              {trader.nameOfbussinessActor && (
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    اسم ممثل الكيان
+                  </label>
+                  <div className="text-sm text-gray-900 font-medium">
+                    {trader.nameOfbussinessActor}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Tax Information Section */}
+          {(trader.specialNumber || trader.imageOfcertificate) && (
+            <div className="bg-white shadow-sm border border-gray-200 rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <FileText className="text-orange-600 mx-2" size={20} />
+                  المعلومات الضريبية
+                </h2>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {trader.specialNumber && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        رقم التسجيل الضريبي
+                      </label>
+                      <div className="text-sm text-gray-900 font-medium flex items-center">
+                        <FileText size={14} className="text-gray-400 mr-1" />
+                        {trader.specialNumber}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-white shadow-sm border border-gray-200 rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -545,6 +597,54 @@ export default function TraderProfilePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Tax Certificate */}
+                {trader.imageOfcertificate && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      صورة البطاقة الضريبية
+                    </h4>
+                    <div className="aspect-square">
+                      <img
+                        src={trader.imageOfcertificate}
+                        alt="صورة البطاقة الضريبية"
+                        className="w-full h-full object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Store Logo */}
+                {trader.logo && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      شعار المتجر
+                    </h4>
+                    <div className="aspect-square">
+                      <img
+                        src={trader.logo}
+                        alt="شعار المتجر"
+                        className="w-full h-full object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Bill Image */}
+                {trader.billImage && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      صورة فاتورة حديثة
+                    </h4>
+                    <div className="aspect-square">
+                      <img
+                        src={trader.billImage}
+                        alt="صورة فاتورة حديثة"
+                        className="w-full h-full object-cover rounded-lg border border-gray-200"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

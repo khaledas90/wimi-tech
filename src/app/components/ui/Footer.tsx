@@ -5,9 +5,6 @@ import Link from "next/link";
 import {
   FaInstagram,
   FaEnvelope,
-  FaCcVisa,
-  FaCcMastercard,
-  FaCcPaypal,
   FaSnapchat,
   FaTiktok,
   FaXTwitter,
@@ -19,6 +16,12 @@ import saudi from "../../../../public/asset/images/المعرض السعودى �
 import image1 from "../../../../public/asset/images/1.png";
 import image2 from "../../../../public/asset/images/2.jpg";
 import image3 from "../../../../public/asset/images/3.png";
+import visaIcon from "../../../../public/asset/images/visa.svg";
+import mastercardIcon from "../../../../public/asset/images/mastercard.svg";
+import applePayIcon from "../../../../public/asset/images/apple-pay.svg";
+import tamaraIcon from "../../../../public/asset/images/tamara.png";
+import emkanIcon from "../../../../public/asset/images/emkan.png";
+import tabbyIcon from "../../../../public/asset/images/tabby.svg";
 
 import { Dialog } from "@headlessui/react";
 import TermsModal from "./TermsModal";
@@ -38,7 +41,7 @@ const Footer: React.FC = () => {
   return (
     <>
       <footer className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] text-white mt-20 rounded-t-3xl shadow-2xl pb-8">
-        <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 px-3">
+        <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8 px-3">
           {/* Logo & About */}
           <div>
             <Image
@@ -84,15 +87,6 @@ const Footer: React.FC = () => {
               >
                 <FaXTwitter size={18} />
               </Link>
-              <Link href={"/saudi"} className="hover:text-blue-400 transition">
-                <Image
-                  src={saudi}
-                  width={20}
-                  height={20}
-                  alt="saudi"
-                  unoptimized
-                />
-              </Link>
             </div>
           </div>
 
@@ -116,11 +110,11 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          <div className="lg:col-span-1">
+          <div>
             <h3 className="text-lg font-bold mb-4 border-b border-purple-300 pb-2">
               معرض الصور
             </h3>
-            <div className="grid grid-cols-1">
+            <div className="grid grid-cols-1 gap-3">
               <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
                 <Link
                   href="https://maroof.sa/businesses/details/365522?pageType=1&userId=41203506-6e83-40be-8652-3f40f6278125"
@@ -129,9 +123,9 @@ const Footer: React.FC = () => {
                   <Image
                     src={image1}
                     alt="قم المعرف"
-                    width={300}
-                    height={150}
-                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    width={200}
+                    height={120}
+                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
@@ -141,9 +135,9 @@ const Footer: React.FC = () => {
                   <Image
                     src={image2}
                     alt="ضريبة القيمة المضافة"
-                    width={300}
-                    height={150}
-                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    width={200}
+                    height={120}
+                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
@@ -156,9 +150,9 @@ const Footer: React.FC = () => {
                   <Image
                     src={image3}
                     alt="شهادة المركز السعودي للأعمال"
-                    width={300}
-                    height={150}
-                    className="w-56 h-56 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
+                    width={200}
+                    height={120}
+                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
                     unoptimized
                   />
                 </Link>
@@ -195,6 +189,74 @@ const Footer: React.FC = () => {
                 </a>
               </li>
             </ul>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-bold mb-4 border-b border-purple-300 pb-2">
+              طرق الدفع
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={visaIcon}
+                  alt="فيزا"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>فيزا</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={mastercardIcon}
+                  alt="ماستر كارد"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>ماستر كارد</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={applePayIcon}
+                  alt="آبل باي"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>آبل باي</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={tamaraIcon}
+                  alt="تامارا"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>تامارا</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={emkanIcon}
+                  alt="امكان"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>امكان</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-100">
+                <Image
+                  src={tabbyIcon}
+                  alt="تابي"
+                  width={24}
+                  height={16}
+                  className="object-contain"
+                />
+                <span>تابي</span>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -407,25 +469,64 @@ const Footer: React.FC = () => {
                 </button>
               </li>
             </ul>
-
-            <div className="flex items-center gap-4 mt-6 text-white opacity-90">
-              <FaCcVisa
-                size={32}
-                className="hover:opacity-100 transition hover:text-blue-400"
-              />
-              <FaCcMastercard
-                size={32}
-                className="hover:opacity-100 transition hover:text-red-400"
-              />
-              <FaCcPaypal
-                size={32}
-                className="hover:opacity-100 transition hover:text-blue-300"
-              />
-            </div>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-purple-400 pt-6 text-center text-sm text-gray-300">
+        {/* Important Links Section */}
+        <div className="mt-8 border-t border-purple-400 pt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <Link
+              href="/"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              الرئيسية
+            </Link>
+            <Link
+              href="/search"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              البحث
+            </Link>
+            <Link
+              href="/favorit"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              المفضلة
+            </Link>
+            <Link
+              href="/view_carts"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              سلة التسوق
+            </Link>
+            <Link
+              href="/auth"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              تسجيل الدخول
+            </Link>
+            <Link
+              href="/trade/auth"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              تسجيل التاجر
+            </Link>
+            <Link
+              href="/user_notification"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              الإشعارات
+            </Link>
+            <Link
+              href="/saudi"
+              className="text-gray-300 hover:text-white transition text-sm"
+            >
+              المعرض السعودي
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-6 border-t border-purple-400 pt-6 text-center text-sm text-gray-300">
           &copy; {new Date().getFullYear()} جميع الحقوق محفوظة –{" "}
           <span className="font-semibold text-white">Wimi Tech</span>
         </div>

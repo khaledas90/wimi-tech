@@ -324,7 +324,6 @@ export default function AddProductPage() {
                   </div>
                 </div>
 
-                {/* Error Message */}
                 {uploadError && (
                   <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <div className="flex items-center gap-2">

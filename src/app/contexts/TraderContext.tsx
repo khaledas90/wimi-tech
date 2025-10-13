@@ -19,17 +19,23 @@ interface TraderProfile {
   verify: boolean;
   address: string;
   googleMapLink: string;
+  describtion?: string;
+  nameOfbussinessActor?: string;
   block: boolean;
   waiting: boolean;
   nationalId: string;
   imageOftrading: string;
+  specialNumber?: string;
+  imageOfcertificate?: string;
   nationalId2: string;
   imageOfnationalId: string;
   Iban: string;
   nameOfbank: string;
   nameOfperson: string;
   imageOfiban: string;
+  logo?: string;
   imageOffront: string;
+  billImage?: string;
   otp: string;
   createdAt: string;
 }

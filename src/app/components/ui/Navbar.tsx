@@ -82,17 +82,15 @@ const SmartNavbar = () => {
         } bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] shadow-md border-b-2 border-[#f59e0b]`}
       >
         <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          {/* الشعار */}
           <Link href="/" className="flex items-center gap-2">
             <Image
               src={Logo}
               alt="شعار"
-              className="w-[30px] md:w-[46px]  h-[30px] md:h-[46px] rounded-full border-2 border-border-icon shadow-[0_0_12px_#10b981] transition-transform hover:scale-110"
+              className="w-[30px] md:w-[46px]  h-[30px] md:h-[46px] rounded-full border-2 border-border-icon shadow-[0_0_12px_#10b981] transition-transform "
               unoptimized
             />
           </Link>
 
-          {/* شريط البحث */}
           <Link
             href={"/search"}
             className="hidden md:flex flex-1 max-w-lg items-center bg-white/90 backdrop-blur rounded-full px-4 py-1 shadow-inner focus-within:ring-2 focus-within:ring-yellow-400 transition"

@@ -5,7 +5,7 @@ import SmartNavbar from "@/app/components/ui/Navbar";
 import FormField from "@/app/components/ui/Formfield";
 import { ApiResponse, FieldForm, signup_user } from "@/app/lib/type";
 import { BaseUrl, ApiKey } from "@/app/components/Baseurl";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -26,6 +26,7 @@ export default function AuthTrader() {
   const [registerData, setRegisterData] = useState<Record<string, any>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
+  const [isRegisterLoading, setIsRegisterLoading] = useState(false);
 
   // ===== Login Fields =====
   const loginFields: FieldForm[] = [
@@ -40,6 +41,7 @@ export default function AuthTrader() {
 
   // ===== Register Fields =====
   const registerFields: FieldForm[] = [
+    // Personal Information Section
     { name: "firstName", label: "الاسم الاول", type: "text", requierd: true },
     { name: "lastName", label: "الاسم الاخير", type: "text", requierd: true },
     {
@@ -55,8 +57,29 @@ export default function AuthTrader() {
       type: "password",
       requierd: true,
     },
+
+    // Business Information Section
     { name: "address", label: "العنوان", type: "text", requierd: true },
-    { name: "googleMapLink", label: "جوجل ماب", type: "url", requierd: true },
+    {
+      name: "googleMapLink",
+      label: "رابط جوجل ماب",
+      type: "url",
+      requierd: true,
+    },
+    {
+      name: "describtion",
+      label: "وصف نشاطك التجاري",
+      type: "text",
+      requierd: true,
+    },
+    {
+      name: "nameOfbussinessActor",
+      label: "اسم ممثل الكيان",
+      type: "text",
+      requierd: true,
+    },
+
+    // Commercial Registration Section
     {
       name: "nationalId",
       label: "رقم السجل التجاري",
@@ -69,6 +92,22 @@ export default function AuthTrader() {
       type: "file",
       requierd: true,
     },
+
+    // Tax Information Section
+    {
+      name: "specialNumber",
+      label: "رقم التسجيل الضريبي",
+      type: "text",
+      requierd: true,
+    },
+    {
+      name: "imageOfcertificate",
+      label: "صورة من البطاقة الضريبية",
+      type: "file",
+      requierd: true,
+    },
+
+    // Identity Documents Section
     {
       name: "nationalId2",
       label: "رقم الهوية الوطنية / الاقامة",
@@ -77,10 +116,12 @@ export default function AuthTrader() {
     },
     {
       name: "imageOfnationalId",
-      label: "صورة من الهوية",
+      label: "صورة من الهوية الوطنية",
       type: "file",
       requierd: true,
     },
+
+    // Banking Information Section
     { name: "Iban", label: "رقم الايبان", type: "text", requierd: true },
     { name: "nameOfbank", label: "اسم البنك", type: "text", requierd: true },
     {
@@ -95,9 +136,23 @@ export default function AuthTrader() {
       type: "file",
       requierd: true,
     },
+
+    // Store Images Section
+    {
+      name: "logo",
+      label: "الشعار الخاص بالمتجر",
+      type: "file",
+      requierd: true,
+    },
     {
       name: "imageOffront",
       label: "صورة من واجهة المحل",
+      type: "file",
+      requierd: true,
+    },
+    {
+      name: "billImage",
+      label: "صورة فاتورة حديثة",
       type: "file",
       requierd: true,
     },
@@ -161,11 +216,52 @@ export default function AuthTrader() {
   // ===== Handle Register =====
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsRegisterLoading(true);
 
     try {
+      // Validate required fields
+      const requiredFields = [
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "password",
+        "address",
+        "googleMapLink",
+        "describtion",
+        "nameOfbussinessActor",
+        "nationalId",
+        "imageOftrading",
+        "specialNumber",
+        "imageOfcertificate",
+        "nationalId2",
+        "imageOfnationalId",
+        "Iban",
+        "nameOfbank",
+        "nameOfperson",
+        "imageOfiban",
+        "logo",
+        "imageOffront",
+        "billImage",
+      ];
+
+      const missingFields = requiredFields.filter(
+        (field) => !registerData[field]
+      );
+
+      if (missingFields.length > 0) {
+        toast.error(
+          `يرجى ملء جميع الحقول المطلوبة: ${missingFields.join(", ")}`
+        );
+        setIsRegisterLoading(false);
+        return;
+      }
+
       const formDataToSend = new FormData();
       for (const [key, value] of Object.entries(registerData)) {
-        formDataToSend.append(key, value);
+        if (value) {
+          formDataToSend.append(key, value);
+        }
       }
 
       const url = `${BaseUrl}traders/signup`;
@@ -190,8 +286,10 @@ export default function AuthTrader() {
             { phoneNumber: registerData.phoneNumber },
             { headers: { "Content-Type": "application/json", api_key: ApiKey } }
           );
+          toast.success("تم إرسال رمز التحقق إلى رقم هاتفك");
         } catch (err) {
           console.error("Failed to send trader OTP after signup:", err);
+          toast.error("تم إنشاء الحساب ولكن فشل في إرسال رمز التحقق");
         }
         setVerifyModalOpen(true);
       } else {
@@ -202,18 +300,30 @@ export default function AuthTrader() {
 
       if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
+      } else if (error?.response?.status === 400) {
+        toast.error("بيانات غير صحيحة. يرجى التحقق من جميع الحقول");
+      } else if (error?.response?.status === 409) {
+        toast.error("هذا الحساب موجود بالفعل");
+      } else if (error?.response?.status === 413) {
+        toast.error("حجم الملفات كبير جداً. يرجى اختيار ملفات أصغر");
+      } else if (error?.response?.status === 422) {
+        toast.error("بيانات غير صحيحة. يرجى التحقق من جميع الحقول المطلوبة");
+      } else if (error?.code === "NETWORK_ERROR") {
+        toast.error("خطأ في الاتصال. يرجى المحاولة مرة أخرى");
       } else {
-        toast.error("حدث خطأ في عملية التسجيل");
+        toast.error("حدث خطأ في عملية التسجيل. يرجى المحاولة مرة أخرى");
       }
+    } finally {
+      setIsRegisterLoading(false);
     }
   };
 
   return (
     <>
       <SmartNavbar />
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 flex items-center justify-center py-10 px-4">
+      <div className="min-h-screen my-3 bg-gradient-to-br from-purple-50 to-orange-50 flex items-center justify-center py-10 px-4">
         <Container>
-          <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-3xl space-y-6 border border-purple-100">
+          <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-4xl space-y-6 border border-purple-100">
             {/* Tabs */}
             <div className="flex justify-center mb-6 gap-2">
               <button
@@ -265,7 +375,7 @@ export default function AuthTrader() {
 
             {/* Register Form */}
             {activeTab === "register" && (
-              <form onSubmit={handleRegister} className="space-y-4">
+              <form onSubmit={handleRegister} className="space-y-6">
                 <div className="flex flex-col items-center space-y-2">
                   <Image
                     src={Logo}
@@ -281,13 +391,155 @@ export default function AuthTrader() {
                   </h2>
                 </div>
 
-                <FormField
-                  fields={registerFields}
-                  data={registerData}
-                  onChange={setRegisterData}
-                />
+                {/* Personal Information Section */}
+                <div className="space-y-4 border-y-gray-50 w-full">
+                  <div className="flex items-center border-y-gray-50 w-full gap-2 mb-3">
+                    <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">1</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      المعلومات الشخصية
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4 border-y-gray-50 w-full">
+                    <FormField
+                      fields={registerFields.slice(0, 5)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
 
-                <div className="text-center">
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-6"></div>
+
+                {/* Business Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">2</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      معلومات النشاط التجاري
+                    </h3>
+                  </div>
+                  <FormField
+                    fields={registerFields.slice(5, 9)}
+                    data={registerData}
+                    onChange={setRegisterData}
+                  />
+                </div>
+
+                <div className="border-t border-gray-200 my-6"></div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">3</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      السجل التجاري
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      fields={registerFields.slice(9, 11)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-6"></div>
+
+                {/* Tax Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">4</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      المعلومات الضريبية
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      fields={registerFields.slice(11, 13)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-6"></div>
+
+                {/* Identity Documents Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">5</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      وثائق الهوية
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      fields={registerFields.slice(13, 15)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-6"></div>
+
+                {/* Banking Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">6</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      معلومات البنك
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      fields={registerFields.slice(15, 19)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-6"></div>
+
+                {/* Store Images Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">7</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700">
+                      صور المتجر
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      fields={registerFields.slice(19, 22)}
+                      data={registerData}
+                      onChange={setRegisterData}
+                    />
+                  </div>
+                </div>
+
+                {/* Terms and Conditions */}
+                <div className="text-center bg-gray-50 rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-4">
                     بالضغط على "إنشاء حساب" أنت توافق على{" "}
                     <span
@@ -308,9 +560,21 @@ export default function AuthTrader() {
 
                 <button
                   type="submit"
-                  className="w-full bg-black text-white font-bold py-2 rounded-lg shadow-lg transition-all duration-300 hover:scale-[1.02] hover:opacity-90"
+                  disabled={isRegisterLoading}
+                  className={`w-full text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-300 hover:scale-[1.02] hover:opacity-90 flex items-center justify-center gap-2 ${
+                    isRegisterLoading
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-black hover:opacity-90"
+                  }`}
                 >
-                  إنشاء حساب
+                  {isRegisterLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      جاري إنشاء الحساب...
+                    </>
+                  ) : (
+                    "إنشاء حساب"
+                  )}
                 </button>
               </form>
             )}
