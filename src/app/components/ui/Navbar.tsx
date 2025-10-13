@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BaseUrl } from "../Baseurl";
 import { useTrader } from "@/app/contexts/TraderContext";
+import { useUser } from "@/app/contexts/UserContext";
 
 const SmartNavbar = () => {
   const router = useRouter();
@@ -21,8 +22,9 @@ const SmartNavbar = () => {
   const [allProducts, setAllProducts] = useState(0);
   const [allnotificatio, setAllnotificatio] = useState(0);
 
-  // Use trader context
+  // Use trader and user contexts
   const { trader, logout: traderLogout } = useTrader();
+  const { user, logout: userLogout } = useUser();
   const url = `${BaseUrl}users/shopping`;
   const get_user_notification = `${BaseUrl}users/getMyNotification`;
   const controlNavbar = () => {
@@ -32,7 +34,11 @@ const SmartNavbar = () => {
   };
 
   const handleLogout = () => {
-    traderLogout();
+    if (token_admin) {
+      traderLogout();
+    } else if (token) {
+      userLogout();
+    }
     setShowModal(false);
     router.push("/");
   };
@@ -192,7 +198,7 @@ const SmartNavbar = () => {
                 {token_admin
                   ? "مرحباً بالتاجر 👋"
                   : token
-                  ? "مرحباً 👋"
+                  ? "مرحباً بالمستخدم 👋"
                   : "اختر نوع التسجيل"}
               </h2>
 
@@ -220,6 +226,45 @@ const SmartNavbar = () => {
                       className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-full hover:from-green-600 hover:to-green-700 transition flex items-center justify-center gap-2"
                     >
                       لوحة التحكم
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 rounded-full hover:from-red-600 hover:to-red-700 transition"
+                    >
+                      تسجيل الخروج
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-sm text-gray-500 mt-2 hover:underline"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              ) : token && user ? (
+                <div className="flex flex-col gap-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
+                    <div className="text-center space-y-2">
+                      <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mx-auto">
+                        <span className="text-white font-bold text-lg">
+                          {user.username?.charAt(0) || "م"}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-gray-800 text-lg">
+                        {user.username}
+                      </h3>
+                      <p className="text-sm text-gray-600">ID: {user.UID}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Link
+                      href="/profile"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition flex items-center justify-center gap-2"
+                    >
+                      <User2 size={16} />
+                      الملف الشخصي
                     </Link>
                     <button
                       onClick={handleLogout}

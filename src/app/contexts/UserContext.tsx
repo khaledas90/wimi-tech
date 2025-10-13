@@ -11,12 +11,16 @@ import { BaseUrl } from "@/app/components/Baseurl";
 import Cookies from "js-cookie";
 
 interface UserProfile {
+  _id: string;
   UID: string;
   username: string;
   phoneNumber: string;
+  password: string;
   verify: boolean;
   favourites: string[];
+  otp: string;
   createdAt: string;
+  __v: number;
 }
 
 interface UserContextType {
@@ -73,7 +77,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       });
 
       if (response.status === 200) {
-        setUser(response.data.data);
+        // Handle the nested response structure: data.data.user
+        const userData = response.data.data?.user || response.data.data;
+        console.log("User API Response:", response.data);
+        console.log("User Data:", userData);
+        setUser(userData);
       } else {
         setError("Failed to fetch user data");
       }
@@ -94,7 +102,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     // Clear all user-related cookies
     Cookies.remove("token");
     Cookies.remove("phone");
-    
+
     // Reset state
     setUser(null);
     setError(null);

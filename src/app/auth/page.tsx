@@ -28,6 +28,7 @@ export default function AuthPage() {
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const router = useRouter();
+  const { refreshUserData } = useUser();
 
   // ===== Login Fields =====
   const loginFields: FieldForm[] = [
@@ -83,8 +84,11 @@ export default function AuthPage() {
       Cookies.set("token", token, { expires: 1 });
       Cookies.set("phone", user.phoneNumber);
 
+      // Refresh user data in context
+      await refreshUserData();
+
       toast.success("تم تسجيل الدخول بنجاح 🎉");
-      router.push("/auth");
+      router.push("/");
     } catch (error: any) {
       console.error("Login error:", error);
 
@@ -113,6 +117,10 @@ export default function AuthPage() {
       );
       const { phoneNumber } = res.data as any;
       Cookies.set("phone", phoneNumber);
+
+      // Refresh user data in context
+      await refreshUserData();
+
       toast.success("تم إنشاء الحساب بنجاح 🎉");
       try {
         await Postresponse(
