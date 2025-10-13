@@ -111,9 +111,13 @@ export default function AuthTrader() {
       const res = await axios.post(url, loginData);
 
       if (res.status === 200 || res.status === 201) {
-        const { token } = res.data.data;
+        const { token, isBlocked, isWaiting, phoneNumber, uid, username } =
+          res.data.data;
+
+        // Store only essential data in cookies
         Cookies.set("token_admin", token, { expires: 1 });
-        Cookies.set("phone", loginData.phoneNumber);
+        Cookies.set("phone", phoneNumber);
+
         toast.success("تم تسجيل الدخول بنجاح 🎉");
         setTimeout(() => {
           window.location.href = "/admin";
@@ -163,8 +167,11 @@ export default function AuthTrader() {
 
       if (res.status === 200 || res.status === 201) {
         toast.success("تم إنشاء الحساب بنجاح 🎉");
-        // Send OTP to trader and open verification modal
+
+        // Store only essential registration data
         Cookies.set("phone", registerData.phoneNumber);
+
+        // Send OTP to trader and open verification modal
         try {
           await axios.post(
             `${BaseUrl}traders/verify-otp`,

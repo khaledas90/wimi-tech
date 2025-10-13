@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { BaseUrl } from "../Baseurl";
+import { useTrader } from "@/app/contexts/TraderContext";
 
 const SmartNavbar = () => {
   const router = useRouter();
@@ -19,6 +20,9 @@ const SmartNavbar = () => {
   const token_admin = Cookies.get("token_admin");
   const [allProducts, setAllProducts] = useState(0);
   const [allnotificatio, setAllnotificatio] = useState(0);
+
+  // Use trader context
+  const { trader, logout: traderLogout } = useTrader();
   const url = `${BaseUrl}users/shopping`;
   const get_user_notification = `${BaseUrl}users/getMyNotification`;
   const controlNavbar = () => {
@@ -28,8 +32,7 @@ const SmartNavbar = () => {
   };
 
   const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("token_admin");
+    traderLogout();
     setShowModal(false);
     router.push("/");
   };
@@ -153,7 +156,6 @@ const SmartNavbar = () => {
           </div>
         </div>
 
-        {/* البحث في الموبايل */}
         <div className="md:hidden px-4 pb-3">
           <Link
             href={"/search"}
@@ -169,7 +171,6 @@ const SmartNavbar = () => {
         </div>
       </header>
 
-      {/* المودال لاختيار نوع التسجيل */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -188,10 +189,54 @@ const SmartNavbar = () => {
               className="bg-white rounded-2xl p-6 shadow-xl w-[90%] max-w-sm text-center"
             >
               <h2 className="text-xl font-bold text-[#f0a136] mb-4">
-                {token ? "مرحباً 👋" : "اختر نوع التسجيل"}
+                {token_admin
+                  ? "مرحباً بالتاجر 👋"
+                  : token
+                  ? "مرحباً 👋"
+                  : "اختر نوع التسجيل"}
               </h2>
 
-              {token ? (
+              {token_admin && trader ? (
+                <div className="flex flex-col gap-4">
+                  <div className="bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl p-4 border border-orange-200">
+                    <div className="text-center space-y-2">
+                      <h3 className="font-bold text-gray-800 text-lg">
+                        {trader.firstName} {trader.lastName}
+                      </h3>
+                      <p className="text-sm text-gray-600">ID: {trader.UID}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Link
+                      href="/admin/profile"
+                      className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition flex items-center justify-center gap-2"
+                    >
+                      <User2 size={16} />
+                      الملف الشخصي
+                    </Link>
+                    <Link
+                      href="/admin"
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-full hover:from-green-600 hover:to-green-700 transition flex items-center justify-center gap-2"
+                    >
+                      لوحة التحكم
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 rounded-full hover:from-red-600 hover:to-red-700 transition"
+                    >
+                      تسجيل الخروج
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-sm text-gray-500 mt-2 hover:underline"
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              ) : token ? (
                 <div className="flex flex-col gap-4">
                   <button
                     onClick={handleLogout}

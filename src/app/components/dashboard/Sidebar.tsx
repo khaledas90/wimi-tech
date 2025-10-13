@@ -1,22 +1,36 @@
-'use client'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { LayoutDashboard, PackagePlus, Settings, View, Menu, Bell, BadgeDollarSign,  } from 'lucide-react'
-import { useState } from 'react'
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  PackagePlus,
+  Settings,
+  View,
+  Menu,
+  Bell,
+  BadgeDollarSign,
+  User,
+} from "lucide-react";
+import { useState } from "react";
 
 const navItems = [
-  { href: '/admin', label: 'الرئيسية', icon: LayoutDashboard },
-  { href: '/admin/add-product', label: 'إضافة منتج', icon: PackagePlus },
+  { href: "/admin", label: "الرئيسية", icon: LayoutDashboard },
+  { href: "/admin/profile", label: "الملف الشخصي", icon: User },
+  { href: "/admin/add-product", label: "إضافة منتج", icon: PackagePlus },
   // { href: '/admin/update', label: 'الإعدادات', icon: Settings },
-  { href: '/admin/view', label: 'عرض المنتجات', icon: View },
-  { href: '/admin/order', label: 'عرض الطلبات', icon: View },
-  { href: '/admin/notification', label: 'عرض الاشعارات', icon: Bell },
-  { href: '/admin/direct-payment', label: 'المدفوعات المباشرة', icon: BadgeDollarSign },
-]
+  { href: "/admin/view", label: "عرض المنتجات", icon: View },
+  { href: "/admin/order", label: "عرض الطلبات", icon: View },
+  { href: "/admin/notification", label: "عرض الاشعارات", icon: Bell },
+  {
+    href: "/admin/direct-payment",
+    label: "المدفوعات المباشرة",
+    icon: BadgeDollarSign,
+  },
+];
 
 export default function Sidebar() {
-  const path = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
+  const path = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
@@ -30,24 +44,22 @@ export default function Sidebar() {
       </button>
 
       {/* Sidebar */}
-  <aside
-  dir="rtl"
-  className={`
+      <aside
+        dir="rtl"
+        className={`
     fixed top-0 right-0 h-screen w-64  bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155]  text-white shadow-xl rounded-l-lg z-40 flex flex-col transition-transform duration-300 ease-in-out
-    ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+    ${isOpen ? "translate-x-0" : "translate-x-full"}
     lg:translate-x-0
     overflow-y-auto
   `}
->
-
-      
+      >
         <div className="p-6 text-center font-bold text-xl border-b border-white/10">
           لوحة التحكم
         </div>
 
         <nav className="flex flex-col p-4 gap-2">
           {navItems.map(({ href, label, icon: Icon }) => {
-            const isActive = path === href
+            const isActive = path === href;
             return (
               <Link
                 key={href}
@@ -56,15 +68,15 @@ export default function Sidebar() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-white/10 text-yellow-300 border-b-4 border-yellow-300'
-                      : 'hover:bg-white/20 hover:text-white'
+                      ? "bg-white/10 text-yellow-300 border-b-4 border-yellow-300"
+                      : "hover:bg-white/20 hover:text-white"
                   }
                 `}
               >
                 <Icon size={20} />
                 <span className="text-sm font-medium">{label}</span>
               </Link>
-            )
+            );
           })}
         </nav>
       </aside>
@@ -77,5 +89,5 @@ export default function Sidebar() {
         />
       )}
     </>
-  )
+  );
 }

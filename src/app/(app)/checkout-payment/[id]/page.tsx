@@ -33,6 +33,12 @@ export default function OrderDetailsPage() {
   const orderId = params.id as string;
   const router = useRouter();
   const [orderData, setOrderData] = useState<OrderDetails | null>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    totalPrice: number;
+    addedValue10: number;
+    addedValue1_5: number;
+    totalPrice2: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const token = Cookies.get("token_admin");
@@ -52,7 +58,13 @@ export default function OrderDetailsPage() {
         );
 
         if (response.data.success) {
-          setOrderData(response.data.data);
+          setOrderData(response.data.data.order);
+          setPaymentDetails({
+            totalPrice: response.data.data.totalPrice,
+            addedValue10: response.data.data.addedValue10,
+            addedValue1_5: response.data.data.addedValue1_5,
+            totalPrice2: response.data.data.totalPrice2,
+          });
         } else {
           setError("فشل في تحميل تفاصيل الطلب");
         }
@@ -123,7 +135,7 @@ export default function OrderDetailsPage() {
       className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50"
       dir="rtl"
     >
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-9xl">
         <Card className="mb-8 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-600 to-purple-700 p-6 text-white">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -228,17 +240,51 @@ export default function OrderDetailsPage() {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center py-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl px-4">
-                  <span className="text-lg font-bold text-gray-900">
-                    المجموع الكلي:
-                  </span>
-                  <span className="text-2xl font-bold text-blue-600">
-                    {calculateTotal()} ر.س
-                  </span>
+                <div className="space-y-3 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-900">
+                      المبلغ المستحق:
+                    </span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {paymentDetails?.totalPrice || 0} ر.س
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-900">
+                      ضريبه القيمه المضافه (10%):
+                    </span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {paymentDetails?.addedValue1_5.toFixed(2) || 0} ر.س
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-gray-900">
+                      ضريبه القيمه المضافه (1.5%):
+                    </span>
+                    <span className="text-xl font-bold text-blue-600">
+                      {paymentDetails?.addedValue10 || 0} ر.س
+                    </span>
+                  </div>
+
+                  <div className="border-t border-gray-300 pt-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xl font-bold text-gray-900">
+                        المجموع الكلي:
+                      </span>
+                      <span className="text-2xl font-bold text-blue-600">
+                        {paymentDetails?.totalPrice2 || 0} ر.س
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Card>
-            <PaymentCard orderData={orderData} />
+            <PaymentCard
+              orderData={orderData}
+              paymentDetails={paymentDetails || undefined}
+            />
           </div>
         </div>
       </div>

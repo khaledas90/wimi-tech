@@ -10,7 +10,7 @@ import { Card } from "../../checkout-payment/_components/Card";
 import Image from "next/image";
 import EmkanIcon from "../../../assets/emkan.png";
 import FatoraIcon from "../../../assets/fatora.jpg";
-import TamaraIcon from "../../../assets/tamara.webp";
+import TamaraIcon from "../../../assets/tamara.png";
 
 interface PaymentCardProps {
   orderData?: {

@@ -19,6 +19,7 @@ import { Sparkles } from "lucide-react";
 import Logo from "../../../public/asset/images/ويمي تك.jpg";
 import PhoneVerificationModal from "../components/ui/PhoneVerificationModal";
 import TermsModal from "../components/ui/TermsModal";
+import { useUser } from "../contexts/UserContext";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");

@@ -1,5 +1,6 @@
 import Sidebar from "@/app/components/dashboard/Sidebar";
 import Topbar from "@/app/components/dashboard/Topbar";
+import ClientLayoutWrapper from "./ClientLayoutWrapper";
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 const tajawal = Tajawal({
@@ -12,7 +13,6 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: "ويمى تك ",
   description: "أفضل تجربة عربية بخط جميل",
- 
 };
 
 export default function RootLayout({
@@ -20,13 +20,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
- return (
+  return (
     <div className="flex flex-row-reverse">
       <div className="flex-1 ml-0 lg:mr-64 bg-gradient-to-br from-[#F7F3FF] via-[#FCFAFD] to-[#FFFDFE] min-h-screen">
-    <Topbar />
-        <main className="pt-20 p-6 w-full">{children}</main>
+        <Topbar />
+        <main className="pt-20 p-6 w-full">
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
+        </main>
       </div>
       <Sidebar />
     </div>
-    )
+  );
 }

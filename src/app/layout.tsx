@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { TraderProvider } from "./contexts/TraderContext";
+import { UserProvider } from "./contexts/UserContext";
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -26,8 +28,12 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className={`${tajawal.variable} font-sans antialiased`}>
-        <Toaster position="top-right" />
-        {children}
+        <TraderProvider>
+          <UserProvider>
+            <Toaster position="top-right" />
+            {children}
+          </UserProvider>
+        </TraderProvider>
       </body>
     </html>
   );

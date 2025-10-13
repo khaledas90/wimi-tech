@@ -9,7 +9,7 @@ import axios from "axios";
 import Image from "next/image";
 import EmkanIcon from "../../../assets/emkan.png";
 import FatoraIcon from "../../../assets/fatora.jpg";
-import TamaraIcon from "../../../assets/tamara.webp";
+import TamaraIcon from "../../../assets/tamara.png";
 
 interface PaymentCardProps {
   orderData?: {
@@ -22,9 +22,18 @@ interface PaymentCardProps {
       title: string;
     }>;
   };
+  paymentDetails?: {
+    totalPrice: number;
+    addedValue10: number;
+    addedValue1_5: number;
+    totalPrice2: number;
+  } | null;
 }
 
-export default function PaymentCard({ orderData }: PaymentCardProps) {
+export default function PaymentCard({
+  orderData,
+  paymentDetails,
+}: PaymentCardProps) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     "tamara" | "invoice" | "emkan" | null
   >(null);
@@ -36,6 +45,9 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
   const router = useRouter();
 
   const calculateTotal = () => {
+    if (paymentDetails) {
+      return paymentDetails.totalPrice2;
+    }
     if (!orderData) return 0;
     return orderData.orders.reduce(
       (total, order) => total + order.price * order.quantity,

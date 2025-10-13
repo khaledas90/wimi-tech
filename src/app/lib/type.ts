@@ -493,6 +493,7 @@ export interface OrderItem {
   phoneNumber: string;
   description: string;
   price: number;
+  quantity: number;
   status: "Pending" | "Confirmed" | "Shipped" | "Delivered" | "Cancelled";
   _id: string;
   order_id: string;
