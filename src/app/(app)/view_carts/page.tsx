@@ -66,8 +66,9 @@ export default function Favorite() {
   const [allProducts, setAllProducts] = useState<ProductWithType[]>([]);
   const [register, setRegister] = useState<boolean>(false);
   const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
-  const [selectedProduct, setSelectedProduct] =
-    useState<ProductWithType | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<ProductWithType[]>(
+    []
+  );
   const url = `${BaseUrl}users/shopping`;
   const deleteorder = `${BaseUrl}users/cancelled-order/`;
   const urlcreate = `${BaseUrl}fatora/create-payment`;
@@ -201,7 +202,7 @@ export default function Favorite() {
       (p) => p._id === productId && p.type === "order"
     );
     if (product) {
-      setSelectedProduct(product);
+      setSelectedProducts([product]);
       setShowPaymentModal(true);
     }
   };
@@ -259,6 +260,53 @@ export default function Favorite() {
         return p;
       })
     );
+  };
+
+  const handleDeleteOrder = async (productId: string, orderId?: string) => {
+    console.log(orderId);
+
+    try {
+      if (!token) {
+        setRegister(true);
+        return;
+      }
+
+      if (!orderId) {
+        toast.error("لا يمكن حذف هذا الطلب");
+        return;
+      }
+
+      await axios.delete(`${BaseUrl}orders/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      toast.success("تم حذف الطلب بنجاح 🗑️");
+      setAllProducts((prev) =>
+        prev.filter((p) => !(p._id === productId && p.type === "order"))
+      );
+    } catch (error: any) {
+      console.error("Error deleting order:", error);
+      toast.error(error.response?.data?.message || "فشل حذف الطلب ❌");
+    }
+  };
+
+  const handleBulkPayment = () => {
+    if (!token) {
+      setRegister(true);
+      return;
+    }
+
+    const pendingOrders = allProducts.filter(
+      (p) => p.type === "order" && p.paymentState === "Pending"
+    );
+
+    if (pendingOrders.length === 0) {
+      toast.error("لا توجد طلبات معلقة للدفع");
+      return;
+    }
+
+    setSelectedProducts(pendingOrders);
+    setShowPaymentModal(true);
   };
 
   return (
@@ -414,9 +462,7 @@ export default function Favorite() {
                       <th className="px-4 py-2 text-right text-sm font-semibold border-b">
                         المنتج
                       </th>
-                      <th className="px-4 py-2 text-right text-sm font-semibold border-b">
-                        الوصف
-                      </th>
+
                       <th className="px-4 py-2 text-right text-sm font-semibold border-b">
                         الكمية
                       </th>
@@ -430,7 +476,7 @@ export default function Favorite() {
                         حالة الدفع
                       </th>
                       <th className="px-4 py-2 text-right text-sm font-semibold border-b">
-                        الدفع
+                        الإجراءات
                       </th>
                     </tr>
                   </thead>
@@ -461,9 +507,7 @@ export default function Favorite() {
                           <td className="px-4 py-3 border-b font-bold">
                             {product.title}
                           </td>
-                          <td className="px-4 py-3 border-b text-sm text-gray-500 line-clamp-2">
-                            {product.description}
-                          </td>
+
                           <td className="px-4 py-3 border-b">
                             {product.quantity}
                           </td>
@@ -485,31 +529,36 @@ export default function Favorite() {
                             </span>
                           </td>
                           <td className="px-4 py-3 border-b">
-                            {product.paymentState === "Pending" ? (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handlePayNow(
-                                    product._id,
-                                    product.quantity || 1,
-                                    product.price
-                                  )
-                                }
-                                className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-md hover:shadow-lg transition duration-200"
-                              >
-                                <ShoppingCart size={16} />
-                                <span>ادفع الآن</span>
-                              </button>
-                            ) : (
-                              <span className="text-green-600 font-semibold text-sm">
-                                مدفوع ✓
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteOrder(product._id, product.orderId)
+                              }
+                              className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-full text-xs font-medium shadow-md hover:shadow-lg transition duration-200"
+                            >
+                              <Trash size={14} />
+                              <span>حذف</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
                   </tbody>
                 </table>
+
+                {allProducts.filter(
+                  (p) => p.type === "order" && p.paymentState === "Pending"
+                ).length > 0 && (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleBulkPayment}
+                      className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105"
+                    >
+                      <ShoppingCart size={20} />
+                      <span>ادفع الآن</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -517,7 +566,7 @@ export default function Favorite() {
 
         <LoginRequiredModal show={register} />
 
-        {showPaymentModal && selectedProduct && (
+        {showPaymentModal && selectedProducts.length > 0 && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
@@ -528,7 +577,7 @@ export default function Favorite() {
                   <button
                     onClick={() => {
                       setShowPaymentModal(false);
-                      setSelectedProduct(null);
+                      setSelectedProducts([]);
                     }}
                     className="text-gray-500 hover:text-gray-700 text-2xl"
                   >
@@ -538,48 +587,68 @@ export default function Favorite() {
 
                 <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-2">
-                    تفاصيل المنتج
+                    تفاصيل المنتجات
                   </h4>
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={selectedProduct.images?.[0] || mayser}
-                      alt={selectedProduct.title}
-                      width={60}
-                      height={60}
-                      className="rounded-lg object-cover"
-                    />
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {selectedProduct.title}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        الكمية: {selectedProduct.quantity || 1}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        السعر: {selectedProduct.price} ر.س
-                      </p>
-                      <p className="font-semibold text-purple-600">
-                        الإجمالي:{" "}
-                        {selectedProduct.price *
-                          (selectedProduct.quantity || 1)}{" "}
-                        ر.س
-                      </p>
-                    </div>
+                  <div className="space-y-3 max-h-40 overflow-y-auto">
+                    {selectedProducts.map((product, index) => (
+                      <div
+                        key={`${product._id}-${index}`}
+                        className="flex items-center gap-3 p-2 bg-white rounded border"
+                      >
+                        {product.images?.[0] && (
+                          <Image
+                            src={product.images[0]}
+                            alt={product.title}
+                            width={40}
+                            height={40}
+                            className="rounded object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900 text-sm">
+                            {product.title}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            الكمية: {product.quantity || 1}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            السعر: {product.price} ر.س
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-purple-600 text-sm">
+                            {product.price * (product.quantity || 1)} ر.س
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="font-bold text-lg text-purple-600">
+                      الإجمالي:{" "}
+                      {selectedProducts.reduce(
+                        (sum, product) =>
+                          sum + product.price * (product.quantity || 1),
+                        0
+                      )}{" "}
+                      ر.س
+                    </p>
                   </div>
                 </div>
 
                 <PaymentCard
                   orderData={{
-                    _id: selectedProduct.orderId || selectedProduct._id,
-                    orders: [
-                      {
-                        phoneNumber: Cookies.get("phone") || "",
-                        price: selectedProduct.price,
-                        _id: selectedProduct.orderId || selectedProduct._id,
-                        quantity: selectedProduct.quantity || 1,
-                        title: selectedProduct.title,
-                      },
-                    ],
+                    _id:
+                      selectedProducts[0]?.orderId ||
+                      selectedProducts[0]?._id ||
+                      "bulk-payment",
+                    orders: selectedProducts.map((product) => ({
+                      phoneNumber: Cookies.get("phone") || "",
+                      price: product.price,
+                      _id: product.orderId || product._id,
+                      quantity: product.quantity || 1,
+                      title: product.title,
+                    })),
                   }}
                 />
               </div>
