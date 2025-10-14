@@ -12,7 +12,6 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: "ويمى تك ",
   description: "أفضل تجربة عربية بخط جميل",
- 
 };
 
 export default function RootLayout({
@@ -20,13 +19,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
- return (
-    <div className="flex flex-row-reverse">
-      <div className="flex-1 ml-0 lg:mr-64 bg-gradient-to-br from-[#F7F3FF] via-[#FCFAFD] to-[#FFFDFE] min-h-screen">
-    <Topbar_admin />
-        <main className="pt-20 p-6 w-full">{children}</main>
+  return (
+    <div
+      className={`${tajawal.variable} font-tajawal flex flex-row-reverse min-h-screen`}
+    >
+      <div className="flex-1 ml-0 lg:mr-72 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
+        <Topbar_admin />
+        <main className="pt-20 w-full">{children}</main>
       </div>
       <Sidebar_admin />
     </div>
-    )
+  );
 }

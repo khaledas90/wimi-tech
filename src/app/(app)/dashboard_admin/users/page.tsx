@@ -1,102 +1,85 @@
 "use client";
 import { BaseUrl } from "@/app/components/Baseurl";
 import PaginationComp from "@/app/components/Pagination";
+import { ResponseData } from "@/app/lib/type";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import {
-  Clock,
-  CheckCircle,
-  XCircle,
-  User,
+  Bell,
+  Users,
   Mail,
   Phone,
   Calendar,
   Search,
   Filter,
-  MapPin,
-  Lock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
-export default function WaitingListPage() {
-  const [waitingUsers, setWaitingUsers] = useState<any[]>([]);
+export default function UsersManagementPage() {
+  const [data, setData] = useState<ResponseData>();
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchWaitingUsers = async () => {
+  const urlUsers = `${BaseUrl}admin/users`;
+
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BaseUrl}admin/waiting`, {
-        params: { page },
+      const res = await axios.get(`${urlUsers}?page=${page}`);
+      setData({
+        users: res.data.data.users,
+        traders: [],
+        pagination: {
+          totalUserPages: res.data.data.pagination.totalUserPages,
+          totalTraderPages: 0,
+          totalUsers: res.data.data.pagination.totalUsers,
+          totalTraders: 0,
+          page: res.data.data.pagination.page,
+          limit: res.data.data.pagination.limit,
+        },
       });
-
-      setWaitingUsers(response.data.data.data || []);
-      setTotalPages(response.data.data.pagination?.totalPages || 1);
-    } catch (error) {
-      toast.error("فشل في تحميل المستخدمين");
+    } catch (err) {
+      toast.error("حدث خطأ أثناء جلب البيانات");
     } finally {
       setLoading(false);
     }
   };
-  const handleBlockUser = async (userId: string) => {
-    try {
-      await axios.post(`${BaseUrl}admin/waiting/${userId}`);
-
-      toast.success("✅ تم قفل المستخدم");
-      fetchWaitingUsers(); // لتحديث البيانات بعد القفل
-    } catch (error) {
-      toast.error("❌ فشل في قفل المستخدم");
-      console.error(error);
-    }
-  };
 
   useEffect(() => {
-    fetchWaitingUsers();
+    fetchData();
   }, [page]);
 
-  const filteredUsers = waitingUsers.filter(
-    (user) =>
-      (user.firstName?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (user.lastName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (user.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (user.phoneNumber || "").includes(searchTerm) ||
-      (user.address?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers =
+    data?.users?.filter(
+      (user) =>
+        (user.username?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase()
+        ) || (user.phoneNumber || "").includes(searchTerm)
+    ) || [];
 
   const UserCard = ({ user }: { user: any }) => (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6 space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-          <Clock className="w-6 h-6 text-white" />
+        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <Users className="w-6 h-6 text-white" />
         </div>
         <div>
           <h3 className="font-bold text-lg text-gray-900">
-            {user.firstName || "غير محدد"} {user.lastName || "غير محدد"}
+            {user.username || "غير محدد"}
           </h3>
-          <p className="text-sm text-gray-500">في انتظار الموافقة</p>
+          <p className="text-sm text-gray-500">مستخدم</p>
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm">
-          <Mail className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-600">{user.email || "غير محدد"}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
           <Phone className="w-4 h-4 text-gray-400" />
           <span className="text-gray-600">
             {user.phoneNumber || "غير محدد"}
           </span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-600">{user.address || "غير محدد"}</span>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="w-4 h-4 text-gray-400" />
@@ -122,21 +105,13 @@ export default function WaitingListPage() {
         )}
       </div>
 
-      <div className="flex gap-2 justify-end pt-2">
-        <button
-          onClick={() => handleBlockUser(user._id)}
-          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-        >
-          <Lock className="w-4 h-4" />
-          <span>قفل</span>
-        </button>
+      <div className="flex justify-end pt-2">
         <Link
-          href={user.googleMapLink}
-          target="_blank"
+          href={`/dashboard_admin/notification/${user._id}`}
           className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
         >
-          <MapPin className="w-4 h-4" />
-          <span>الخريطة</span>
+          <Bell className="w-4 h-4" />
+          <span>إرسال إشعار</span>
         </Link>
       </div>
     </div>
@@ -164,23 +139,23 @@ export default function WaitingListPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center">
-                <Clock className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
-                  قائمة الانتظار
+                  إدارة المستخدمين
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  إدارة طلبات الانضمام المعلقة
+                  إدارة جميع المستخدمين المسجلين في النظام
                 </p>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-orange-600">
-                {waitingUsers.length}
+              <div className="text-2xl font-bold text-blue-600">
+                {data?.pagination.totalUsers || 0}
               </div>
-              <div className="text-sm text-gray-500">طلبات في الانتظار</div>
+              <div className="text-sm text-gray-500">إجمالي المستخدمين</div>
             </div>
           </div>
         </div>
@@ -192,10 +167,10 @@ export default function WaitingListPage() {
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="البحث في قائمة الانتظار..."
+                placeholder="البحث عن المستخدمين..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg transition-colors duration-200">
@@ -205,20 +180,20 @@ export default function WaitingListPage() {
           </div>
         </div>
 
-        {/* Waiting Users Section */}
+        {/* Users Section */}
         <section>
           {/* Cards View (mobile + tablet) */}
           <div className="space-y-4 lg:hidden">
             {loading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="text-gray-500 mt-4">جاري التحميل...</p>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-12">
-                <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">
-                  لا توجد طلبات في الانتظار
+                  لا يوجد مستخدمين في هذه الصفحة
                 </p>
               </div>
             ) : (
@@ -232,25 +207,24 @@ export default function WaitingListPage() {
           <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
                 <p className="text-gray-500 mt-4">جاري التحميل...</p>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-12">
-                <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">
-                  لا توجد طلبات في الانتظار
+                  لا يوجد مستخدمين في هذه الصفحة
                 </p>
               </div>
             ) : (
               <table className="min-w-full">
                 <TableHeader
                   headers={[
-                    "الاسم",
-                    "الإيميل",
+                    "اسم المستخدم",
                     "رقم الهاتف",
-                    "العنوان",
-                    "الحالة",
+                    "تاريخ التسجيل",
+                    "حالة التحقق",
                     "الإجراءات",
                   ]}
                 />
@@ -262,26 +236,15 @@ export default function WaitingListPage() {
                     >
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <Users className="w-5 h-5 text-white" />
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">
-                              {user.firstName || "غير محدد"}{" "}
-                              {user.lastName || "غير محدد"}
+                              {user.username || "غير محدد"}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              في انتظار الموافقة
-                            </div>
+                            <div className="text-sm text-gray-500">مستخدم</div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {user.email || "غير محدد"}
-                          </span>
                         </div>
                       </td>
                       <td className="p-4 whitespace-nowrap">
@@ -294,13 +257,12 @@ export default function WaitingListPage() {
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <Calendar className="w-4 h-4 text-gray-400" />
                           <span className="text-gray-600">
-                            {user.address || "غير محدد"}
+                            {moment(user.createdAt).format("YYYY/MM/DD HH:mm")}
                           </span>
                         </div>
                       </td>
-
                       <td className="p-4 whitespace-nowrap">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -321,23 +283,13 @@ export default function WaitingListPage() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleBlockUser(user._id)}
-                            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                          >
-                            <Lock className="w-4 h-4" />
-                            <span>قفل</span>
-                          </button>
-                          <Link
-                            href={user.googleMapLink}
-                            target="_blank"
-                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                          >
-                            <MapPin className="w-4 h-4" />
-                            <span>خريطة</span>
-                          </Link>
-                        </div>
+                        <Link
+                          href={`/dashboard_admin/notification/${user._id}`}
+                          className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                        >
+                          <Bell className="w-4 h-4" />
+                          <span>إشعار</span>
+                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -348,15 +300,16 @@ export default function WaitingListPage() {
         </section>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center">
-            <PaginationComp
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        )}
+        {data?.pagination.totalUserPages &&
+          data.pagination.totalUserPages > 1 && (
+            <div className="flex justify-center">
+              <PaginationComp
+                page={page}
+                totalPages={data.pagination.totalUserPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
       </div>
     </div>
   );

@@ -1,24 +1,23 @@
-'use client'
-import { Bell, User2, LogOut } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
-import logo from '../../../../public/asset/images/ويمي تك.jpg'
-import Link from 'next/link'
-import Cookies from 'js-cookie';
-import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+"use client";
+import { Bell, User2, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import logo from "../../../../public/asset/images/ويمي تك.jpg";
+import Link from "next/link";
+import Cookies from "js-cookie";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 export default function Topbar_admin() {
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const router=useRouter();
+  const router = useRouter();
   const logout = () => {
-    Cookies.remove('token_admin');
-        setTimeout(() => {
+    Cookies.remove("token_admin");
+    setTimeout(() => {
       window.location.href = "/";
-
-}, 500);
+    }, 500);
     setOpenMenu(false);
-  }
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -36,17 +35,16 @@ export default function Topbar_admin() {
       className="
         fixed top-0 left-0 right-0 z-30 h-16
          bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] 
-         rounded-md
-        shadow-sm
+         shadow-lg
         flex items-center justify-between
         px-4 sm:px-6 lg:px-6
-        backdrop-blur-md border-b border-purple-100
-        lg:right-64
+        backdrop-blur-md border-b border-gray-200
+        lg:right-72
       "
     >
       {/* الشعار والترحيب */}
       <div className="flex items-center gap-3">
-        <Link href={'/'}>
+        <Link href={"/"}>
           <Image
             src={logo}
             alt="لوجو"
@@ -56,17 +54,20 @@ export default function Topbar_admin() {
             unoptimized
           />
         </Link>
-        <h1 className="text-sm sm:text-base font-bold text-border-icon truncate max-w-xs sm:max-w-md">
+        <h1 className="text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md">
           أهلاً بك في لوحة التحكم 👋
         </h1>
       </div>
 
       {/* الإشعارات واليوزر */}
-      <div className="relative flex items-center gap-3 text-border-icon" ref={menuRef}>
+      <div
+        className="relative flex items-center gap-3 text-white"
+        ref={menuRef}
+      >
         <motion.button
           whileHover={{ scale: 1.1, rotate: 5 }}
           whileTap={{ scale: 0.9 }}
-          className="p-2 rounded-full hover:bg-[#EEDCFB] transition-colors"
+          className="p-2 rounded-full hover:bg-white/20 transition-colors"
           aria-label="الإشعارات"
         >
           <Bell size={20} />
@@ -76,7 +77,7 @@ export default function Topbar_admin() {
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          className="p-2 rounded-full hover:bg-[#EEDCFB] transition-colors"
+          className="p-2 rounded-full hover:bg-white/20 transition-colors"
           aria-label="حساب المستخدم"
           onClick={() => setOpenMenu((prev) => !prev)}
         >
@@ -105,5 +106,5 @@ export default function Topbar_admin() {
         </AnimatePresence>
       </div>
     </div>
-  )
+  );
 }

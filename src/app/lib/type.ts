@@ -417,19 +417,40 @@ export interface Main_Admin_pannel {
 /////////users admin pannel
 export interface Users_admin_pannel {
   _id: string;
+  username: string;
+  phoneNumber: string;
+  favourites: any[];
+  verify: boolean;
+  otp: string;
+  createdAt: string;
+  UID?: string;
+  __v: 0;
+}
+
+export interface traders_admin_pannel {
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
-  createdAt: string;
-  __v: 0;
-}
-
-export interface traders_admin_pannel extends Users_admin_pannel {
   address: string;
   googleMapLink: string;
   block: boolean;
   verify: boolean;
+  waiting: boolean;
+  otp: string;
+  createdAt: string;
+  UID?: string;
+  nationalId?: string;
+  nationalId2?: string;
+  Iban?: string;
+  nameOfbank?: string;
+  nameOfperson?: string;
+  imageOftrading?: string;
+  imageOfnationalId?: string;
+  imageOfiban?: string;
+  imageOffront?: string;
+  __v: 0;
 }
 export interface ResponseData {
   users: Users_admin_pannel[];
