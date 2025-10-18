@@ -39,6 +39,11 @@ export default function Admin() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [newStatus, setNewStatus] = useState<string>("");
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [walletData, setWalletData] = useState<any>(null);
+  const [walletLoading, setWalletLoading] = useState(false);
   const token = Cookies.get("token_admin");
   const getOrdersUrl = `${BaseUrl}reports/reports`;
 
@@ -61,6 +66,60 @@ export default function Admin() {
     };
     getOrders();
   }, []);
+
+  const handleRefundRequest = async (orderId: string, amount: number) => {
+    try {
+      const res = await axios.post(
+        `${BaseUrl}traders/add-req`,
+        {
+          orderId: orderId,
+          type: "1",
+          amount: amount
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        toast.success("تم إرسال طلب الاسترجاع بنجاح");
+        setRefundModalOpen(false);
+        setRefundOrderId(null);
+      } else {
+        toast.error("فشل في إرسال طلب الاسترجاع");
+      }
+    } catch (error) {
+      toast.error("حدث خطأ أثناء إرسال طلب الاسترجاع");
+      console.error(error);
+    }
+  };
+
+  const handleWalletRequest = async () => {
+    setWalletLoading(true);
+    try {
+      const res = await axios.get(
+        `${BaseUrl}traders/get-wallet`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        setWalletData(res.data);
+        setWalletModalOpen(true);
+        toast.success("تم تحميل بيانات المحفظة بنجاح");
+      } else {
+        toast.error("فشل في تحميل بيانات المحفظة");
+      }
+    } catch (error) {
+      toast.error("حدث خطأ أثناء تحميل بيانات المحفظة");
+      console.error(error);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
 
   const currentOrders = filterState ? filteredOrders : orders;
 
@@ -218,12 +277,30 @@ export default function Admin() {
               <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
                 كل بيانات الطلبات
               </h3>
-              <button
-                onClick={() => setShowModal(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
-              >
-                فلتر حسب الحالة
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleWalletRequest}
+                  disabled={walletLoading}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {walletLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      جاري التحميل...
+                    </>
+                  ) : (
+                    <>
+                      💰 عرض المحفظة
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                >
+                  فلتر حسب الحالة
+                </button>
+              </div>
             </div>
 
             {!loading &&
@@ -280,16 +357,27 @@ export default function Admin() {
                     <strong>{order.paymentState}</strong>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setSelectedOrderId(order._id);
-                      setNewStatus(order.status);
-                      setEditModalOpen(true);
-                    }}
-                    className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-                  >
-                    ✏️ تعديل الحالة
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedOrderId(order._id);
+                        setNewStatus(order.status);
+                        setEditModalOpen(true);
+                      }}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                    >
+                      ✏️ تعديل الحالة
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRefundOrderId(order._id);
+                        setRefundModalOpen(true);
+                      }}
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                    >
+                      💰 استرجاع
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -312,6 +400,7 @@ export default function Admin() {
                     <th className="p-3 text-right">الدفع</th>
                     <th className="p-3 text-right">التاريخ</th>
                     <th className="p-3 text-right">تعديل</th>
+                    <th className="p-3 text-right">استرجاع</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -379,11 +468,124 @@ export default function Admin() {
                           ✏️
                         </button>
                       </td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => {
+                            setRefundOrderId(order._id);
+                            setRefundModalOpen(true);
+                          }}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          💰 استرجاع
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
+            {/* --- Wallet Modal --- */}
+            {walletModalOpen && walletData && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-96 text-black max-h-[80vh] overflow-y-auto">
+                  <h4 className="text-lg font-semibold mb-4 text-center">
+                    💰 بيانات المحفظة
+                  </h4>
+                  <div className="space-y-3">
+                    {"wallet" in (walletData.data || {}) ? (
+                      <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span className="text-gray-700 font-medium">المحفظة</span>
+                        <span className="text-green-600 font-semibold">
+                          {walletData.data.wallet} ريال
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-500 py-4">
+                        لا توجد بيانات محفظة متاحة
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-center mt-6">
+                    <button
+                      onClick={() => {
+                        setWalletModalOpen(false);
+                        setWalletData(null);
+                      }}
+                      className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+                    >
+                      إغلاق
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- Refund Modal --- */}
+            {refundModalOpen && refundOrderId && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-80 text-black">
+                  <h4 className="text-lg font-semibold mb-4">
+                    تأكيد طلب الاسترجاع
+                  </h4>
+                  {(() => {
+                    const order = orders.find(o => o._id === refundOrderId);
+                    return order ? (
+                      <>
+                        
+                        <p className="text-gray-600 mb-2">
+                          العميل: <span className="font-medium">
+                            {order.userId
+                              ? `${order.userId.firstName || ""} ${
+                                  order.userId.lastName || ""
+                                }`.trim() ||
+                                order.userId.phoneNumber ||
+                                "مستخدم مجهول"
+                              : "زائر"}
+                          </span>
+                        </p>
+                        <p className="text-gray-600 mb-2">
+                          المنتج: <span className="font-medium">
+                            {typeof order.productId === "object" &&
+                            order.productId?.title
+                              ? order.productId.title
+                              : "منتج غير معروف"}
+                          </span>
+                        </p>
+                        <p className="text-gray-600 mb-4">
+                          المبلغ: <span className="font-medium text-green-600">{order.totalPrice} EGP</span>
+                        </p>
+                        <p className="text-gray-600 mb-4">
+                          هل أنت متأكد من إرسال طلب استرجاع لهذا الطلب؟
+                        </p>
+                      </>
+                    ) : null;
+                  })()}
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => {
+                        setRefundModalOpen(false);
+                        setRefundOrderId(null);
+                      }}
+                      className="px-3 py-1 rounded border border-gray-300"
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      onClick={() => {
+                        const order = orders.find(o => o._id === refundOrderId);
+                        if (order) {
+                          handleRefundRequest(refundOrderId, order.totalPrice);
+                        }
+                      }}
+                      className="px-3 py-1 rounded text-white bg-red-600 hover:bg-red-700"
+                    >
+                      تأكيد الاسترجاع
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* --- Edit Modal --- */}
             {editModalOpen && selectedOrderId && (

@@ -11,7 +11,7 @@ import {
   Clock,
   TrendingUp,
   BarChart3,
-  Activity,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import moment from "moment";
@@ -186,6 +186,15 @@ export default function Admin_Dash() {
               <Clock className="w-6 h-6 text-orange-600" />
               <span className="font-medium text-orange-900">
                 قائمة الانتظار
+              </span>
+            </Link>
+            <Link
+              href="/dashboard_admin/requests"
+              className="flex items-center gap-3 p-4 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors duration-200"
+            >
+              <FileText className="w-6 h-6 text-indigo-600" />
+              <span className="font-medium text-indigo-900">
+                إدارة الطلبات
               </span>
             </Link>
             <Link

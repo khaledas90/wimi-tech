@@ -28,6 +28,9 @@ interface Order {
 export default function OrderPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+  const [refundAmount, setRefundAmount] = useState<number>(0);
   const token = Cookies.get("token_admin");
 
   useEffect(() => {
@@ -64,6 +67,35 @@ export default function OrderPage() {
       toast.error(error?.response?.data?.message || "خطأ في جلب الطلبات");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefundRequest = async (orderId: string, amount: number) => {
+    try {
+      const res = await axios.post(
+        `${BaseUrl}traders/add-req`,
+        {
+          orderId: orderId,
+          type: "2",
+          amount: amount
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (res.status === 200) {
+        toast.success("تم إرسال طلب الاسترجاع بنجاح");
+        setRefundModalOpen(false);
+        setRefundOrderId(null);
+        setRefundAmount(0);
+      } else {
+        toast.error("فشل في إرسال طلب الاسترجاع");
+      }
+    } catch (error) {
+      toast.error("حدث خطأ أثناء إرسال طلب الاسترجاع");
+      console.error(error);
     }
   };
 
@@ -127,6 +159,9 @@ export default function OrderPage() {
                         <th className="px-3 py-3 text-right text-xs font-medium text-gray-700 border-b">
                           التاريخ
                         </th>
+                        <th className="px-3 py-3 text-right text-xs font-medium text-gray-700 border-b">
+                          استرجاع
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -169,6 +204,18 @@ export default function OrderPage() {
                             <td className="px-3 py-3 text-xs text-gray-700 border-b">
                               {new Date(orderGroup.createdAt).toLocaleDateString('ar-SA')}
                             </td>
+                            <td className="px-3 py-3 text-xs text-gray-700 border-b">
+                              <button
+                                onClick={() => {
+                                  setRefundOrderId(orderItem._id);
+                                  setRefundAmount(orderItem.price);
+                                  setRefundModalOpen(true);
+                                }}
+                                className="text-red-600 hover:text-red-800 text-xs"
+                              >
+                                💰 استرجاع
+                              </button>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -198,6 +245,9 @@ export default function OrderPage() {
                         </th>
                         <th className="px-2 py-2 text-right text-xs font-medium text-gray-700 border-b">
                           الحالة
+                        </th>
+                        <th className="px-2 py-2 text-right text-xs font-medium text-gray-700 border-b">
+                          استرجاع
                         </th>
                       </tr>
                     </thead>
@@ -234,6 +284,18 @@ export default function OrderPage() {
                                  orderItem.status === 'cancelled' ? 'ملغي' :
                                  orderItem.status}
                               </span>
+                            </td>
+                            <td className="px-2 py-2 text-xs text-gray-700 border-b">
+                              <button
+                                onClick={() => {
+                                  setRefundOrderId(orderItem._id);
+                                  setRefundAmount(orderItem.price);
+                                  setRefundModalOpen(true);
+                                }}
+                                className="text-red-600 hover:text-red-800 text-xs"
+                              >
+                                💰
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -285,6 +347,18 @@ export default function OrderPage() {
                             <span className="text-gray-700">{new Date(orderGroup.createdAt).toLocaleDateString('ar-SA')}</span>
                           </div>
                         </div>
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <button
+                            onClick={() => {
+                              setRefundOrderId(orderItem._id);
+                              setRefundAmount(orderItem.price);
+                              setRefundModalOpen(true);
+                            }}
+                            className="w-full text-red-600 hover:text-red-800 text-sm font-medium py-2 px-3 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                          >
+                            💰 طلب استرجاع
+                          </button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -293,6 +367,43 @@ export default function OrderPage() {
             )}
           </div>
         </div>
+
+        {/* Refund Modal */}
+        {refundModalOpen && refundOrderId && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-80 text-black">
+              <h4 className="text-lg font-semibold mb-4">
+                تأكيد طلب الاسترجاع
+              </h4>
+              <p className="text-gray-600 mb-4">
+                المبلغ: <span className="font-medium text-green-600">{refundAmount} ريال</span>
+              </p>
+              <p className="text-gray-600 mb-4">
+                هل أنت متأكد من إرسال طلب استرجاع لهذا الطلب؟
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setRefundModalOpen(false);
+                    setRefundOrderId(null);
+                    setRefundAmount(0);
+                  }}
+                  className="px-3 py-1 rounded border border-gray-300"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={() => {
+                    handleRefundRequest(refundOrderId, refundAmount);
+                  }}
+                  className="px-3 py-1 rounded text-white bg-red-600 hover:bg-red-700"
+                >
+                  تأكيد الاسترجاع
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Container>
   );

@@ -10,6 +10,7 @@ import {
   Store,
   Clock,
   BarChart3,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,6 +22,11 @@ const navItems = [
     href: "/dashboard_admin/user_waiting",
     label: "قائمة الانتظار",
     icon: Clock,
+  },
+  {
+    href: "/dashboard_admin/requests",
+    label: "إدارة الطلبات",
+    icon: FileText,
   },
   {
     href: "/dashboard_admin/profits",
