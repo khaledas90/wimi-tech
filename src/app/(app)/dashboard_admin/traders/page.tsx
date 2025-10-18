@@ -26,6 +26,8 @@ import {
   Globe,
   Copy,
   Check,
+  DollarSign,
+  Edit,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -41,6 +43,10 @@ export default function TradersManagementPage() {
   const [traderDetails, setTraderDetails] = useState<any>(null);
   const [loadingTraderDetails, setLoadingTraderDetails] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [selectedTraderForWallet, setSelectedTraderForWallet] = useState<any>(null);
+  const [walletAmount, setWalletAmount] = useState("");
+  const [walletLoading, setWalletLoading] = useState(false);
   const [modalData, setModalData] = useState<{
     type: "block" | "unblock" | "delete";
     trader: any;
@@ -136,6 +142,56 @@ export default function TradersManagementPage() {
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
       toast.error("فشل في نسخ الرابط");
+    }
+  };
+
+  const handleUpdateWallet = (trader: any) => {
+    setSelectedTraderForWallet(trader);
+    setWalletAmount((trader as any).wallet?.toString() || "0");
+    setShowWalletModal(true);
+  };
+
+  const updateWalletAmount = async () => {
+    if (!selectedTraderForWallet || !walletAmount) {
+      toast.error("يرجى إدخال مبلغ صحيح");
+      return;
+    }
+
+    const amount = parseFloat(walletAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast.error("يرجى إدخال مبلغ صحيح أكبر من أو يساوي صفر");
+      return;
+    }
+
+    setWalletLoading(true);
+    try {
+      const response = await fetch(`${BaseUrl}admin/update-wallet`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: amount,
+          traderId: selectedTraderForWallet._id
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("تم تحديث المحفظة بنجاح");
+        setShowWalletModal(false);
+        setSelectedTraderForWallet(null);
+        setWalletAmount("");
+        fetchData(); // Refresh the data
+      } else {
+        toast.error(data.message || "فشل في تحديث المحفظة");
+      }
+    } catch (error) {
+      console.error('Error updating wallet:', error);
+      toast.error("حدث خطأ أثناء تحديث المحفظة");
+    } finally {
+      setWalletLoading(false);
     }
   };
 
@@ -257,6 +313,12 @@ export default function TradersManagementPage() {
             {moment(trader.createdAt).format("YYYY/MM/DD HH:mm")}
           </span>
         </div>
+        <div className="flex items-center gap-2 text-sm">
+          <DollarSign className="w-4 h-4 text-green-500" />
+          <span className="font-semibold text-green-600">
+            {((trader as any).wallet || 0).toLocaleString()} ر.س
+          </span>
+        </div>
       </div>
 
       <div className="flex gap-2 justify-end pt-2">
@@ -279,6 +341,14 @@ export default function TradersManagementPage() {
         >
           <Ban className="w-4 h-4" />
           <span>{trader.block ? "فك الحظر" : "حظر"}</span>
+        </button>
+        <button
+          title="تحديث المحفظة"
+          onClick={() => handleUpdateWallet(trader)}
+          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+        >
+          <Edit className="w-4 h-4" />
+          <span>محفظة</span>
         </button>
         <button
           title="حذف"
@@ -406,6 +476,7 @@ export default function TradersManagementPage() {
                     "الإيميل",
                     "رقم الهاتف",
                     "العنوان",
+                    "المحفظة",
                     "الإجراءات",
                   ]}
                 />
@@ -460,6 +531,14 @@ export default function TradersManagementPage() {
                           </span>
                         </div>
                       </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-green-500" />
+                          <span className="font-semibold text-green-600">
+                            {((trader as any).wallet || 0).toLocaleString()} ر.س
+                          </span>
+                        </div>
+                      </td>
 
                       <td className="p-4">
                         <div className="flex items-center gap-2">
@@ -480,6 +559,13 @@ export default function TradersManagementPage() {
                             }`}
                           >
                             <Ban className="w-5 h-5" />
+                          </button>
+                          <button
+                            title="تحديث المحفظة"
+                            onClick={() => handleUpdateWallet(trader)}
+                            className="text-green-500 hover:text-green-700 p-2 rounded-lg hover:bg-green-50 transition-colors duration-200"
+                          >
+                            <Edit className="w-5 h-5" />
                           </button>
                           <button
                             title="حذف"
@@ -776,6 +862,89 @@ export default function TradersManagementPage() {
                     <p className="text-gray-500 text-lg">فشل في تحميل تفاصيل التاجر</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Wallet Update Modal */}
+        {showWalletModal && selectedTraderForWallet && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                      <DollarSign className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        تحديث المحفظة
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {selectedTraderForWallet.firstName} {selectedTraderForWallet.lastName}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      setSelectedTraderForWallet(null);
+                      setWalletAmount("");
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      المبلغ الحالي
+                    </label>
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                      <span className="font-semibold text-green-600">
+                        {((selectedTraderForWallet as any).wallet || 0).toLocaleString()} ر.س
+                      </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      المبلغ الجديد
+                    </label>
+                    <input
+                      type="number"
+                      value={walletAmount}
+                      onChange={(e) => setWalletAmount(e.target.value)}
+                      placeholder="أدخل المبلغ الجديد"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-end mt-6">
+                  <button
+                    onClick={() => {
+                      setShowWalletModal(false);
+                      setSelectedTraderForWallet(null);
+                      setWalletAmount("");
+                    }}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    onClick={updateWalletAmount}
+                    disabled={walletLoading}
+                    className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {walletLoading ? "جاري التحديث..." : "تحديث المحفظة"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

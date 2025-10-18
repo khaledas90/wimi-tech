@@ -450,6 +450,7 @@ export interface traders_admin_pannel {
   imageOfnationalId?: string;
   imageOfiban?: string;
   imageOffront?: string;
+  wallet?: number;
   __v: 0;
 }
 export interface ResponseData {
