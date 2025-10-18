@@ -19,6 +19,13 @@ import {
   Filter,
   X,
   AlertTriangle,
+  Eye,
+  User,
+  CreditCard,
+  FileText,
+  Globe,
+  Copy,
+  Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -29,6 +36,11 @@ export default function TradersManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showTraderModal, setShowTraderModal] = useState(false);
+  const [selectedTrader, setSelectedTrader] = useState<any>(null);
+  const [traderDetails, setTraderDetails] = useState<any>(null);
+  const [loadingTraderDetails, setLoadingTraderDetails] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [modalData, setModalData] = useState<{
     type: "block" | "unblock" | "delete";
     trader: any;
@@ -91,6 +103,63 @@ export default function TradersManagementPage() {
     const actionType = trader.block ? "unblock" : "block";
     setModalData({ type: actionType, trader });
     setShowModal(true);
+  };
+
+  const fetchTraderDetails = async (traderId: string) => {
+    setLoadingTraderDetails(true);
+    try {
+      const response = await axios.get(`${BaseUrl}admin/get-trader/${traderId}`);
+      if (response.data.success) {
+        setTraderDetails(response.data.data);
+      } else {
+        toast.error("فشل في جلب تفاصيل التاجر");
+      }
+    } catch (error) {
+      console.error("Error fetching trader details:", error);
+      toast.error("حدث خطأ أثناء جلب تفاصيل التاجر");
+    } finally {
+      setLoadingTraderDetails(false);
+    }
+  };
+
+  const handleViewTrader = (trader: any) => {
+    setSelectedTrader(trader);
+    setShowTraderModal(true);
+    fetchTraderDetails(trader._id);
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedLink(true);
+      toast.success("تم نسخ الرابط بنجاح");
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (err) {
+      toast.error("فشل في نسخ الرابط");
+    }
+  };
+
+  const extractGoogleMapsEmbedUrl = (googleMapLink: string) => {
+    // Extract coordinates or place ID from Google Maps link
+    // This is a simplified approach - you might need to adjust based on your specific link format
+    try {
+      const url = new URL(googleMapLink);
+      
+      // Check if it's a Google Maps search URL
+      if (url.hostname.includes('google.com') && url.pathname.includes('/search')) {
+        // Extract search query
+        const searchQuery = url.searchParams.get('q');
+        if (searchQuery) {
+          return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(searchQuery)}`;
+        }
+      }
+      
+      // For other Google Maps URLs, return a generic embed URL
+      return `https://www.google.com/maps/embed/v1/search?key=YOUR_API_KEY&q=${encodeURIComponent(googleMapLink)}`;
+    } catch (error) {
+      console.error('Error parsing Google Maps URL:', error);
+      return null;
+    }
   };
 
   const confirmAction = async () => {
@@ -191,6 +260,14 @@ export default function TradersManagementPage() {
       </div>
 
       <div className="flex gap-2 justify-end pt-2">
+        <button
+          title="عرض التفاصيل"
+          onClick={() => handleViewTrader(trader)}
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+        >
+          <Eye className="w-4 h-4" />
+          <span>عرض</span>
+        </button>
         <button
           title={trader.block ? "فك الحظر" : "حظر"}
           onClick={() => handleTraderBlock(trader)}
@@ -387,6 +464,13 @@ export default function TradersManagementPage() {
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           <button
+                            title="عرض التفاصيل"
+                            onClick={() => handleViewTrader(trader)}
+                            className="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          <button
                             title={trader.block ? "فك الحظر" : "حظر"}
                             onClick={() => handleTraderBlock(trader)}
                             className={`p-2 rounded-lg transition-colors duration-200 ${
@@ -432,6 +516,270 @@ export default function TradersManagementPage() {
               />
             </div>
           )}
+
+        {/* Trader Details Modal */}
+        {showTraderModal && selectedTrader && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center">
+                      <Store className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">
+                        تفاصيل التاجر
+                      </h3>
+                      <p className="text-gray-600">
+                        {selectedTrader.firstName} {selectedTrader.lastName}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowTraderModal(false);
+                      setSelectedTrader(null);
+                      setTraderDetails(null);
+                      setCopiedLink(false);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                {loadingTraderDetails ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+                    <p className="text-gray-500 mt-4">جاري تحميل التفاصيل...</p>
+                  </div>
+                ) : traderDetails ? (
+                  <div className="space-y-6">
+                    {/* Basic Information */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5 text-green-600" />
+                        المعلومات الأساسية
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3">
+                          <Mail className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">البريد الإلكتروني</p>
+                            <p className="font-medium text-gray-900">{traderDetails.email || "غير محدد"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Phone className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">رقم الهاتف</p>
+                            <p className="font-medium text-gray-900">{traderDetails.phoneNumber || "غير محدد"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">العنوان</p>
+                            <p className="font-medium text-gray-900">{traderDetails.address || "غير محدد"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-sm text-gray-500">تاريخ التسجيل</p>
+                            <p className="font-medium text-gray-900">
+                              {moment(traderDetails.createdAt).format("YYYY/MM/DD HH:mm")}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Business Information */}
+                    {(traderDetails.nationalId || traderDetails.Iban || traderDetails.nameOfbank) && (
+                      <div className="bg-gray-50 rounded-xl p-6">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <CreditCard className="w-5 h-5 text-blue-600" />
+                          المعلومات التجارية
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {traderDetails.nationalId && (
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-5 h-5 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">الهوية الوطنية</p>
+                                <p className="font-medium text-gray-900">{traderDetails.nationalId}</p>
+                              </div>
+                            </div>
+                          )}
+                          {traderDetails.Iban && (
+                            <div className="flex items-center gap-3">
+                              <CreditCard className="w-5 h-5 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">رقم الآيبان</p>
+                                <p className="font-medium text-gray-900">{traderDetails.Iban}</p>
+                              </div>
+                            </div>
+                          )}
+                          {traderDetails.nameOfbank && (
+                            <div className="flex items-center gap-3">
+                              <FileText className="w-5 h-5 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">اسم البنك</p>
+                                <p className="font-medium text-gray-900">{traderDetails.nameOfbank}</p>
+                              </div>
+                            </div>
+                          )}
+                          {traderDetails.nameOfperson && (
+                            <div className="flex items-center gap-3">
+                              <User className="w-5 h-5 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">اسم صاحب الحساب</p>
+                                <p className="font-medium text-gray-900">{traderDetails.nameOfperson}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status Information */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-orange-600" />
+                        حالة الحساب
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${traderDetails.verify ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <div>
+                            <p className="text-sm text-gray-500">حالة التحقق</p>
+                            <p className={`font-medium ${traderDetails.verify ? 'text-green-600' : 'text-red-600'}`}>
+                              {traderDetails.verify ? 'محقق' : 'غير محقق'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${traderDetails.block ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                          <div>
+                            <p className="text-sm text-gray-500">حالة الحظر</p>
+                            <p className={`font-medium ${traderDetails.block ? 'text-red-600' : 'text-green-600'}`}>
+                              {traderDetails.block ? 'محظور' : 'نشط'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${traderDetails.waiting ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+                          <div>
+                            <p className="text-sm text-gray-500">قائمة الانتظار</p>
+                            <p className={`font-medium ${traderDetails.waiting ? 'text-yellow-600' : 'text-green-600'}`}>
+                              {traderDetails.waiting ? 'في الانتظار' : 'مقبول'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Google Map Link */}
+                    {traderDetails.googleMapLink && (
+                      <div className="bg-gray-50 rounded-xl p-6">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <Globe className="w-5 h-5 text-purple-600" />
+                          موقع التاجر على الخريطة
+                        </h4>
+                        
+                        {/* Copy Link Section */}
+                        <div className="mb-4">
+                          <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-gray-500 mb-1">رابط الخريطة</p>
+                              <p className="text-sm text-gray-700 truncate" title={traderDetails.googleMapLink}>
+                                {traderDetails.googleMapLink}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => copyToClipboard(traderDetails.googleMapLink)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                copiedLink 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                              }`}
+                            >
+                              {copiedLink ? (
+                                <>
+                                  <Check className="w-4 h-4" />
+                                  <span>تم النسخ</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-4 h-4" />
+                                  <span>نسخ الرابط</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Map Display */}
+                        <div className="space-y-4">
+                          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div className="p-4 border-b border-gray-200">
+                              <h5 className="font-medium text-gray-900 flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-red-500" />
+                                عرض الموقع على الخريطة
+                              </h5>
+                            </div>
+                            <div className="h-64 bg-gray-100 flex items-center justify-center">
+                              <div className="text-center">
+                                <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                <p className="text-gray-600 mb-2">عرض الخريطة</p>
+                                <a
+                                  href={traderDetails.googleMapLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                                >
+                                  <Globe className="w-4 h-4" />
+                                  فتح في خرائط جوجل
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Alternative: Simple iframe approach (if you have Google Maps API key) */}
+                          {/* Uncomment and add your API key if you want to show embedded map */}
+                          {/*
+                          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div className="p-4 border-b border-gray-200">
+                              <h5 className="font-medium text-gray-900">الموقع على الخريطة</h5>
+                            </div>
+                            <iframe
+                              src={extractGoogleMapsEmbedUrl(traderDetails.googleMapLink) || traderDetails.googleMapLink}
+                              width="100%"
+                              height="250"
+                              style={{ border: 0 }}
+                              allowFullScreen
+                              loading="lazy"
+                              referrerPolicy="no-referrer-when-downgrade"
+                              className="w-full h-64"
+                            />
+                          </div>
+                          */}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">فشل في تحميل تفاصيل التاجر</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Confirmation Modal */}
         {showModal && modalData && (

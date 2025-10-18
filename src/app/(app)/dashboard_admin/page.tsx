@@ -12,6 +12,7 @@ import {
   TrendingUp,
   BarChart3,
   FileText,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import moment from "moment";
@@ -195,6 +196,15 @@ export default function Admin_Dash() {
               <FileText className="w-6 h-6 text-indigo-600" />
               <span className="font-medium text-indigo-900">
                 إدارة الطلبات
+              </span>
+            </Link>
+            <Link
+              href="/dashboard_admin/wallets"
+              className="flex items-center gap-3 p-4 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors duration-200"
+            >
+              <Wallet className="w-6 h-6 text-emerald-600" />
+              <span className="font-medium text-emerald-900">
+                إدارة المحافظ
               </span>
             </Link>
             <Link
