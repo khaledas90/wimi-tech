@@ -207,7 +207,7 @@ export default function OrderPage() {
                             <td className="px-3 py-3 text-xs text-gray-700 border-b">
                               <button
                                 onClick={() => {
-                                  setRefundOrderId(orderItem._id);
+                                  setRefundOrderId(orderGroup._id);
                                   setRefundAmount(orderItem.price);
                                   setRefundModalOpen(true);
                                 }}
@@ -288,7 +288,7 @@ export default function OrderPage() {
                             <td className="px-2 py-2 text-xs text-gray-700 border-b">
                               <button
                                 onClick={() => {
-                                  setRefundOrderId(orderItem._id);
+                                  setRefundOrderId(orderGroup._id);
                                   setRefundAmount(orderItem.price);
                                   setRefundModalOpen(true);
                                 }}
@@ -350,7 +350,7 @@ export default function OrderPage() {
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <button
                             onClick={() => {
-                              setRefundOrderId(orderItem._id);
+                              setRefundOrderId(orderGroup._id);
                               setRefundAmount(orderItem.price);
                               setRefundModalOpen(true);
                             }}
