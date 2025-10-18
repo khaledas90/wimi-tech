@@ -12,6 +12,8 @@ import {
   RefreshCw,
   Filter,
   Search,
+  XCircle,
+  X,
 } from "lucide-react";
 
 // Define the request type based on the actual API response
@@ -36,6 +38,10 @@ export default function RequestsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [confirmAmount, setConfirmAmount] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const token = Cookies.get("token_admin");
 
   useEffect(() => {
@@ -77,11 +83,29 @@ export default function RequestsPage() {
     setRefreshing(false);
   };
 
-  const handleStatusUpdate = async (requestId: string, newStatus: "Delivered") => {
+  const handleConfirmDelivery = (request: Request) => {
+    setSelectedRequest(request);
+    setConfirmAmount(request.amount);
+    setShowConfirmModal(true);
+  };
+
+  const handleStatusUpdate = async (requestId: string) => {
     try {
+      const currentRequest = requests.find(r => r._id === requestId);
+      if (!currentRequest) {
+        toast.error("لم يتم العثور على الطلب");
+        return;
+      }
+
+      // Toggle between pending and Delivered
+      const newStatus = currentRequest.status === "pending" ? "Delivered" : "pending";
+      
       const response = await axios.patch(
-        `${BaseUrl}admin/req/${requestId}`,
-        { status: newStatus },
+        `${BaseUrl}admin/update-status`,
+        { 
+          orderId: requestId,
+          amount: currentRequest.amount
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,7 +114,8 @@ export default function RequestsPage() {
       );
 
       if (response.data.success) {
-        toast.success("تم تحديث حالة الطلب بنجاح");
+        const statusText = newStatus === "Delivered" ? "تم التسليم" : "قيد الانتظار";
+        toast.success(`تم تحديث حالة الطلب إلى ${statusText}`);
         fetchRequests(); // Refresh the list
       } else {
         toast.error(response.data.message || "فشل في تحديث حالة الطلب");
@@ -98,6 +123,40 @@ export default function RequestsPage() {
     } catch (error: any) {
       console.error("Error updating request status:", error);
       toast.error(error?.response?.data?.message || "خطأ في تحديث حالة الطلب");
+    }
+  };
+
+  const handleConfirmDeliverySubmit = async () => {
+    if (!selectedRequest) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await axios.patch(
+        `${BaseUrl}admin/update-status`,
+        { 
+          orderId: selectedRequest._id,
+          amount: confirmAmount
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(`تم تأكيد التسليم بالمبلغ ${confirmAmount.toLocaleString()} ر.س`);
+        setShowConfirmModal(false);
+        setSelectedRequest(null);
+        fetchRequests(); // Refresh the list
+      } else {
+        toast.error(response.data.message || "فشل في تأكيد التسليم");
+      }
+    } catch (error: any) {
+      console.error("Error confirming delivery:", error);
+      toast.error(error?.response?.data?.message || "خطأ في تأكيد التسليم");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -279,9 +338,9 @@ export default function RequestsPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       الحالة
                     </th>
-                    {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       الإجراءات
-                    </th> */}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -302,25 +361,27 @@ export default function RequestsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(request.status)}
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
-                          {request.status === "pending" && (
+                          {request.status === "pending" ? (
                             <button
-                              onClick={() => handleStatusUpdate(request._id, "Delivered")}
+                              onClick={() => handleConfirmDelivery(request)}
                               className="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-50 transition-colors duration-200"
                               title="تأكيد التسليم"
                             >
                               <CheckCircle className="w-5 h-5" />
                             </button>
+                          ) : (
+                            <button
+                              onClick={() => handleStatusUpdate(request._id)}
+                              className="text-orange-600 hover:text-orange-900 p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200"
+                              title="إرجاع للانتظار"
+                            >
+                              <Clock className="w-5 h-5" />
+                            </button>
                           )}
-                          <button
-                            className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                            title="عرض التفاصيل"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
                         </div>
-                      </td> */}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -329,6 +390,80 @@ export default function RequestsPage() {
           )}
         </div>
       </div>
+
+      {/* Confirm Delivery Modal */}
+      {showConfirmModal && selectedRequest && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">تأكيد التسليم</h3>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <h4 className="font-medium text-gray-900 mb-2">تفاصيل الطلب</h4>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p><span className="font-medium">رقم الطلب:</span> {selectedRequest._id.slice(-8)}</p>
+                  <p><span className="font-medium">معرف التاجر:</span> {selectedRequest.traderId.slice(-8)}</p>
+                  <p><span className="font-medium">معرف المستخدم:</span> {selectedRequest.userId.slice(-8)}</p>
+                  <p><span className="font-medium">المبلغ الحالي:</span> {selectedRequest.amount.toLocaleString()} ر.س</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  المبلغ المراد تأكيده
+                </label>
+                <input
+                  type="number"
+                  value={confirmAmount}
+                  onChange={(e) => setConfirmAmount(Number(e.target.value))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg text-black"
+                  placeholder="أدخل المبلغ"
+                  min="0"
+                  step="0.01"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  المبلغ الحالي: {selectedRequest.amount.toLocaleString()} ر.س
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                disabled={isSubmitting}
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleConfirmDeliverySubmit}
+                disabled={isSubmitting || confirmAmount <= 0}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    جاري التأكيد...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    تأكيد التسليم
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
