@@ -314,7 +314,6 @@ export default function TradersManagementPage() {
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm">
-          <DollarSign className="w-4 h-4 text-green-500" />
           <span className="font-semibold text-green-600">
             {((trader as any).wallet || 0).toLocaleString()} ر.س
           </span>
@@ -533,7 +532,6 @@ export default function TradersManagementPage() {
                       </td>
                       <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-green-500" />
                           <span className="font-semibold text-green-600">
                             {((trader as any).wallet || 0).toLocaleString()} ر.س
                           </span>
