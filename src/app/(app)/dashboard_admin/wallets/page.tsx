@@ -53,11 +53,6 @@ export default function WalletsPage() {
   }, []);
 
   const fetchWallets = async () => {
-    if (!token) {
-      toast.error("يرجى تسجيل الدخول أولاً");
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await axios.get(`${BaseUrl}admin/get-wallet`, {
@@ -88,20 +83,20 @@ export default function WalletsPage() {
   };
 
   const filteredWallets = wallets.filter((wallet) => {
-    const matchesSearch = 
+    const matchesSearch =
       wallet._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wallet.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wallet.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wallet.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wallet.phoneNumber.includes(searchTerm);
-    
+
     const walletBalance = wallet.wallet ?? 0;
-    const matchesBalance = 
+    const matchesBalance =
       filterBalance === "all" ||
       (filterBalance === "positive" && walletBalance > 0) ||
       (filterBalance === "zero" && walletBalance === 0) ||
       (filterBalance === "negative" && walletBalance < 0);
-    
+
     return matchesSearch && matchesBalance;
   });
 
@@ -157,7 +152,9 @@ export default function WalletsPage() {
               disabled={refreshing}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors duration-200 disabled:opacity-50"
             >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+              />
               تحديث
             </button>
           </div>
@@ -169,7 +166,9 @@ export default function WalletsPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">فلترة حسب الرصيد:</span>
+                <span className="text-sm font-medium text-gray-700">
+                  فلترة حسب الرصيد:
+                </span>
               </div>
               <select
                 value={filterBalance}
@@ -201,8 +200,12 @@ export default function WalletsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">إجمالي المحافظ</p>
-                <p className="text-3xl font-bold text-gray-900">{wallets.length}</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  إجمالي المحافظ
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {wallets.length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
                 <Wallet className="w-8 h-8 text-white" />
@@ -213,10 +216,15 @@ export default function WalletsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">إجمالي الرصيد</p>
-                 <p className="text-3xl font-bold text-green-600">
-                   {wallets.reduce((sum, wallet) => sum + (wallet.wallet ?? 0), 0).toLocaleString()} ر.س
-                 </p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  إجمالي الرصيد
+                </p>
+                <p className="text-3xl font-bold text-green-600">
+                  {wallets
+                    .reduce((sum, wallet) => sum + (wallet.wallet ?? 0), 0)
+                    .toLocaleString()}{" "}
+                  ر.س
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
                 <DollarSign className="w-8 h-8 text-white" />
@@ -227,10 +235,12 @@ export default function WalletsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">محافظ موجبة</p>
-                 <p className="text-3xl font-bold text-green-600">
-                   {wallets.filter(w => (w.wallet ?? 0) > 0).length}
-                 </p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  محافظ موجبة
+                </p>
+                <p className="text-3xl font-bold text-green-600">
+                  {wallets.filter((w) => (w.wallet ?? 0) > 0).length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
                 <TrendingUp className="w-8 h-8 text-white" />
@@ -241,10 +251,12 @@ export default function WalletsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">محافظ سالبة</p>
-                 <p className="text-3xl font-bold text-red-600">
-                   {wallets.filter(w => (w.wallet ?? 0) < 0).length}
-                 </p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  محافظ سالبة
+                </p>
+                <p className="text-3xl font-bold text-red-600">
+                  {wallets.filter((w) => (w.wallet ?? 0) < 0).length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center">
                 <TrendingDown className="w-8 h-8 text-white" />
@@ -263,41 +275,46 @@ export default function WalletsPage() {
             <div className="text-center py-12">
               <Wallet className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg">لا توجد محافظ</p>
-              <p className="text-gray-400 text-sm">لم يتم العثور على أي محافظ تطابق المعايير المحددة</p>
+              <p className="text-gray-400 text-sm">
+                لم يتم العثور على أي محافظ تطابق المعايير المحددة
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                 <thead className="bg-gray-50">
-                   <tr>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       معرف المستخدم
-                     </th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       اسم المستخدم
-                     </th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       البريد الإلكتروني
-                     </th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       رقم الهاتف
-                     </th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       العنوان
-                     </th>
-                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       الرصيد
-                     </th>
-                     {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      معرف المستخدم
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      اسم المستخدم
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      البريد الإلكتروني
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      رقم الهاتف
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      العنوان
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      الرصيد
+                    </th>
+                    {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                        الإجراءات
                      </th> */}
-                   </tr>
-                 </thead>
+                  </tr>
+                </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredWallets.map((wallet) => {
                     const BalanceIcon = getBalanceIcon(wallet.wallet);
                     return (
-                      <tr key={wallet._id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <tr
+                        key={wallet._id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {wallet._id.slice(-8)}
                         </td>
@@ -319,15 +336,26 @@ export default function WalletsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-gray-400" />
-                            <span className="max-w-32 truncate" title={wallet.address}>
+                            <span
+                              className="max-w-32 truncate"
+                              title={wallet.address}
+                            >
                               {wallet.address}
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <BalanceIcon className={`w-4 h-4 ${getBalanceColor(wallet.wallet)}`} />
-                            <span className={`font-semibold ${getBalanceColor(wallet.wallet)}`}>
+                            <BalanceIcon
+                              className={`w-4 h-4 ${getBalanceColor(
+                                wallet.wallet
+                              )}`}
+                            />
+                            <span
+                              className={`font-semibold ${getBalanceColor(
+                                wallet.wallet
+                              )}`}
+                            >
                               {formatBalance(wallet.wallet)}
                             </span>
                           </div>

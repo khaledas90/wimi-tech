@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import FormField from "@/app/components/ui/Formfield";
 import { Creatproduct, FieldForm } from "@/app/lib/type";
@@ -30,6 +30,14 @@ const AddProductModal = ({
     phoneNumber: phoneNumber,
   });
   const [addingProduct, setAddingProduct] = useState(false);
+
+  // Update phone number when prop changes
+  useEffect(() => {
+    setProductFormData((prev) => ({
+      ...prev,
+      phoneNumber: phoneNumber,
+    }));
+  }, [phoneNumber]);
 
   const productFields: FieldForm[] = [
     {
@@ -87,23 +95,37 @@ const AddProductModal = ({
         phoneNumber: productFormData.phoneNumber || phoneNumber,
       };
 
+      console.log("New product to add:", newProduct);
+
       const existingProductsJson = Cookies.get("direct_payment_products");
+      console.log("Existing products JSON:", existingProductsJson);
+
       const existingProducts = existingProductsJson
         ? JSON.parse(existingProductsJson)
         : [];
 
+      console.log("Existing products parsed:", existingProducts);
+
       const updatedProducts = [...existingProducts, newProduct];
+      console.log("Updated products:", updatedProducts);
 
       Cookies.set("direct_payment_products", JSON.stringify(updatedProducts), {
         expires: 30,
+        path: "/",
+        secure: false,
+        sameSite: "lax",
       });
+
+      // Verify the cookie was set
+      const verifyCookie = Cookies.get("direct_payment_products");
+      console.log("Cookie verification:", verifyCookie);
 
       toast.success("تم إضافة المنتج بنجاح 🎉");
       onProductAdded();
       resetProductForm();
       onClose();
     } catch (error: any) {
-      console.error(error);
+      console.error("Error adding product:", error);
       toast.error("حدث خطأ أثناء إضافة المنتج");
     } finally {
       setAddingProduct(false);
@@ -119,7 +141,7 @@ const AddProductModal = ({
       price: "",
       category: "",
       images: "",
-      phoneNumber: "",
+      phoneNumber: phoneNumber,
     });
   };
 

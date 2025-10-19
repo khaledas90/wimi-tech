@@ -12,7 +12,7 @@ interface Order {
   description: string;
   price: number;
   quantity: number;
-  order_id: string;
+  order_id?: string; // Made optional since AddProductModal doesn't create this
   status?: string;
   phoneNumber?: string;
 }
@@ -37,10 +37,54 @@ const OrdersTable = ({
   const [sendingBulk, setSendingBulk] = useState(false);
 
   const token = Cookies.get("token_admin");
-  const Allorders = JSON.parse(Cookies.get("direct_payment_products") ?? "[]");
+
+  // Debug function to check cookie
+  const verifyCookie = () => {
+    const cookieData = Cookies.get("direct_payment_products");
+    console.log("=== COOKIE VERIFICATION ===");
+    console.log("Raw cookie data:", cookieData);
+
+    if (cookieData) {
+      try {
+        const parsedData = JSON.parse(cookieData);
+        console.log("Parsed cookie data:", parsedData);
+        console.log("Number of products:", parsedData.length);
+        console.log(
+          "Products for current phone:",
+          parsedData.filter((p: any) => p.phoneNumber === phoneNumber)
+        );
+      } catch (error) {
+        console.error("Error parsing cookie:", error);
+      }
+    } else {
+      console.log("No cookie data found");
+    }
+    console.log("=== END VERIFICATION ===");
+  };
+
   useEffect(() => {
     if (phoneNumber) {
-      setOrders(Allorders);
+      // Verify cookie first
+      verifyCookie();
+
+      // Read cookie data fresh each time
+      const cookieData = Cookies.get("direct_payment_products");
+      console.log("OrdersTable - Cookie data:", cookieData);
+
+      const Allorders = cookieData ? JSON.parse(cookieData) : [];
+      console.log("OrdersTable - Parsed orders:", Allorders);
+
+      // Filter orders by phone number
+      const filteredOrders = Allorders.filter(
+        (order: Order) => order.phoneNumber === phoneNumber
+      );
+      console.log(
+        "OrdersTable - Filtered orders for phone:",
+        phoneNumber,
+        filteredOrders
+      );
+
+      setOrders(filteredOrders);
     }
   }, [phoneNumber, refreshTrigger]);
 
@@ -48,6 +92,16 @@ const OrdersTable = ({
     // Clear selections when orders change
     setSelectedOrders([]);
   }, [orders]);
+
+  // Debug useEffect - runs on every render
+  useEffect(() => {
+    console.log("OrdersTable render - Current state:", {
+      phoneNumber,
+      ordersCount: orders.length,
+      orders,
+      refreshTrigger,
+    });
+  });
 
   // const fetchOrders = async () => {
   //   if (!phoneNumber) return;
@@ -81,23 +135,34 @@ const OrdersTable = ({
   // };
 
   const deleteOrder = async (orderId: string) => {
-    const updatedOrders = orders.filter((order) => order.order_id !== orderId);
+    console.log("Deleting order with ID:", orderId);
 
-    setOrders((prevOrders) => {
-      const index = prevOrders.findIndex((order) => order.order_id === orderId);
+    // Get all orders from cookie
+    const cookieData = Cookies.get("direct_payment_products");
+    const allOrders = cookieData ? JSON.parse(cookieData) : [];
 
-      if (index !== -1) {
-        const updatedOrders = [...prevOrders];
-        updatedOrders.splice(index, 1);
+    // Filter out the order to delete
+    const updatedAllOrders = allOrders.filter(
+      (order: Order) => order._id !== orderId
+    );
 
-        Cookies.set("direct_payment_products", JSON.stringify(updatedOrders), {
-          expires: 7,
-        });
+    console.log("Updated orders after deletion:", updatedAllOrders);
 
-        return updatedOrders;
-      }
-      return prevOrders;
+    // Update cookie
+    Cookies.set("direct_payment_products", JSON.stringify(updatedAllOrders), {
+      expires: 30,
+      path: "/",
+      secure: false,
+      sameSite: "lax",
     });
+
+    // Update local state
+    setOrders((prevOrders) =>
+      prevOrders.filter((order) => order._id !== orderId)
+    );
+
+    toast.success("تم حذف الطلب بنجاح");
+    onOrderDeleted();
     // if (!token) {
     //   toast.error("يرجى تسجيل الدخول أولاً");
     //   return;
@@ -127,8 +192,8 @@ const OrdersTable = ({
     if (checked) {
       setSelectedOrders(
         orders
-          .filter((or) => or.phoneNumber == phoneNumber)
-          .map((order) => order.order_id)
+          .filter((or) => or.phoneNumber === phoneNumber)
+          .map((order) => order._id)
       );
     } else {
       setSelectedOrders([]);
@@ -145,7 +210,7 @@ const OrdersTable = ({
 
   const handleSendSelected = () => {
     const selectedOrdersData = orders.filter((order) =>
-      selectedOrders.includes(order.order_id)
+      selectedOrders.includes(order._id)
     );
     onSendBulkPaymentLinks(selectedOrdersData);
   };
@@ -176,7 +241,78 @@ const OrdersTable = ({
 
   return (
     <div className="w-full">
-      {orders.filter((or) => or.phoneNumber == phoneNumber).length > 0 && (
+      {/* Debug Section - Remove this after testing */}
+      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <h4 className="font-bold text-yellow-800 mb-2">Debug Info:</h4>
+        <p className="text-sm text-yellow-700">Phone Number: {phoneNumber}</p>
+        <p className="text-sm text-yellow-700">Orders Count: {orders.length}</p>
+        <p className="text-sm text-yellow-700">
+          Refresh Trigger: {refreshTrigger}
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              console.log("=== MANUAL DEBUG ===");
+              const cookieData = Cookies.get("direct_payment_products");
+              console.log("Manual cookie check:", cookieData);
+              if (cookieData) {
+                const parsed = JSON.parse(cookieData);
+                console.log("Manual parsed data:", parsed);
+                console.log("All products:", parsed);
+                console.log(
+                  "Products for this phone:",
+                  parsed.filter((p: any) => p.phoneNumber === phoneNumber)
+                );
+              }
+              verifyCookie();
+            }}
+            className="px-3 py-1 bg-yellow-600 text-white rounded text-sm"
+          >
+            Check Cookie
+          </button>
+          <button
+            onClick={() => {
+              console.log("=== ADDING TEST PRODUCT ===");
+              const testProduct = {
+                _id: `test_${Date.now()}`,
+                title: "Test Product",
+                description: "This is a test product",
+                price: 100,
+                quantity: 1,
+                phoneNumber: phoneNumber,
+              };
+
+              const existingData = Cookies.get("direct_payment_products");
+              const existingProducts = existingData
+                ? JSON.parse(existingData)
+                : [];
+              const updatedProducts = [...existingProducts, testProduct];
+
+              console.log("Adding test product:", testProduct);
+              console.log("Updated products:", updatedProducts);
+
+              Cookies.set(
+                "direct_payment_products",
+                JSON.stringify(updatedProducts),
+                {
+                  expires: 30,
+                  path: "/",
+                  secure: false,
+                  sameSite: "lax",
+                }
+              );
+
+              // Force refresh
+              window.location.reload();
+            }}
+            className="px-3 py-1 bg-green-600 text-white rounded text-sm"
+          >
+            Add Test Product
+          </button>
+        </div>
+      </div>
+
+      {orders.filter((or) => or.phoneNumber === phoneNumber).length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -193,7 +329,8 @@ const OrdersTable = ({
 
                 <span className="text-sm font-medium text-gray-700">
                   تحديد الكل ({selectedOrders.length}/
-                  {orders.filter((or) => or.phoneNumber == phoneNumber).length})
+                  {orders.filter((or) => or.phoneNumber === phoneNumber).length}
+                  )
                 </span>
               </label>
             </div>
@@ -239,19 +376,19 @@ const OrdersTable = ({
           </thead>
           <tbody className="divide-y divide-gray-200">
             {orders
-              .filter((or) => or.phoneNumber == phoneNumber)
+              .filter((or) => or.phoneNumber === phoneNumber)
               .map((order, index) => (
                 <tr
-                  key={order.order_id}
+                  key={order._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-b">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selectedOrders.includes(order.order_id)}
+                        checked={selectedOrders.includes(order._id)}
                         onChange={(e) =>
-                          handleSelectOrder(order.order_id, e.target.checked)
+                          handleSelectOrder(order._id, e.target.checked)
                         }
                         className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                       />
@@ -275,8 +412,8 @@ const OrdersTable = ({
                   </td>
                   <td className="px-3 sm:px-4 py-2 sm:py-3 border-b">
                     <button
-                      onClick={() => deleteOrder(order.order_id)}
-                      disabled={deletingOrder === order.order_id}
+                      onClick={() => deleteOrder(order._id)}
+                      disabled={deletingOrder === order._id}
                       className="text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                       title="حذف الطلب"
                       aria-label="حذف الطلب"
@@ -292,7 +429,7 @@ const OrdersTable = ({
 
       <div className="block sm:hidden space-y-4">
         {orders
-          .filter((or) => or.phoneNumber == phoneNumber)
+          .filter((or) => or.phoneNumber === phoneNumber)
           .map((order, index) => (
             <div
               key={order._id}
