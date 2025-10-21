@@ -13,6 +13,7 @@ import {
   BarChart3,
   FileText,
   Wallet,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 import moment from "moment";
@@ -214,6 +215,15 @@ export default function Admin_Dash() {
               <TrendingUp className="w-6 h-6 text-purple-600" />
               <span className="font-medium text-purple-900">
                 تقارير الأرباح
+              </span>
+            </Link>
+            <Link
+              href="/dashboard_admin/product-verification"
+              className="flex items-center gap-3 p-4 bg-teal-50 hover:bg-teal-100 rounded-xl transition-colors duration-200"
+            >
+              <Package className="w-6 h-6 text-teal-600" />
+              <span className="font-medium text-teal-900">
+                اعتماد المنتجات
               </span>
             </Link>
           </div>

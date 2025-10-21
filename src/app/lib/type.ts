@@ -535,3 +535,33 @@ export interface OrderDetailsResponse {
   message: string;
   data: OrderDetails;
 }
+
+// Product Verification Types
+export interface ProductForVerification {
+  _id: string;
+  title: string;
+  traderId: {
+    _id: string;
+    email: string;
+    phoneNumber: string;
+    UID: string;
+  };
+  description: string;
+  price: number;
+  category: string;
+  stockQuantity: number;
+  images: string[];
+  createdAt: string;
+  verify: boolean;
+  __v: number;
+}
+
+export interface ProductVerificationResponse {
+  success: boolean;
+  message: string;
+  data: ProductForVerification[];
+}
+
+export interface UpdateVerificationRequest {
+  productId: string;
+}
