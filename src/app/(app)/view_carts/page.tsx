@@ -9,8 +9,6 @@ import Image from "next/image";
 import { ShoppingCart, Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { LoginRequiredModal } from "@/app/components/ui/Pop-up-login";
-import Link from "next/link";
-import mayser from "../../../../public/asset/images/ميسر.png";
 import PaymentCard from "./_components/PaymentCart";
 interface ProductWithType {
   _id: string;
@@ -138,9 +136,14 @@ export default function Favorite() {
       const res = await axios.post(
         `${BaseUrl}orders`,
         {
-          productId,
-          quantity,
-          totalPrice,
+          products: [
+            {
+              productId,
+              quantity,
+              traderId: allProducts.find(p => p._id === productId)?.traderId || "",
+              price: unitPrice,
+            }
+          ]
         },
         {
           headers: {

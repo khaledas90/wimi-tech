@@ -10,15 +10,12 @@ import {
   User,
   Phone,
   Mail,
-  Calendar,
   RefreshCw,
   Search,
   Filter,
-  Eye,
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import moment from "moment";
 
 // Define the wallet type based on the actual API response
 interface WalletData {
@@ -32,12 +29,6 @@ interface WalletData {
   wallet?: number;
   nationalId?: string;
   Iban?: string;
-}
-
-interface WalletsResponse {
-  success: boolean;
-  message: string;
-  data: WalletData[];
 }
 
 export default function WalletsPage() {

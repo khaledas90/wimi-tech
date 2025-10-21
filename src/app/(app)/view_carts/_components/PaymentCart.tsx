@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 
-import { CheckCircle, CreditCard, Download, FileText } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 
 import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
 import Cookies from "js-cookie";
 import axios from "axios";
 import { Card } from "../../checkout-payment/_components/Card";
@@ -26,9 +25,7 @@ interface PaymentCardProps {
 }
 
 export default function PaymentCard({ orderData }: PaymentCardProps) {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "tamara" | "invoice" | "emkan" | null
-  >(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"tamara" | "invoice" | "emkan" | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
