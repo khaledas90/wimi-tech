@@ -11,7 +11,6 @@ export default function ClientLayoutWrapper({
 }: ClientLayoutWrapperProps) {
   const { trader } = useTrader();
 
-  // Determine trader status from context
   const traderStatus = trader?.block
     ? "blocked"
     : trader?.waiting

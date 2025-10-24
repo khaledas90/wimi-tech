@@ -217,6 +217,23 @@ export default function AuthTrader() {
           toast.error("فشل في إرسال رمز التحقق");
         }
         setVerifyModalOpen(true);
+      } else if (
+        error?.response?.data?.message === "Account not verified. OTP sent."
+      ) {
+        toast.error("الحساب غير محقق. تم إرسال رمز التحقق.");
+        // Automatically send OTP for verification
+        try {
+          await axios.post(
+            `${BaseUrl}traders/verify-otp`,
+            { phoneNumber: loginData.phoneNumber },
+            { headers: { "Content-Type": "application/json", api_key: ApiKey } }
+          );
+          toast.success("تم إرسال رمز التحقق إلى رقم هاتفك");
+        } catch (otpError) {
+          console.error("Failed to send OTP:", otpError);
+          toast.error("فشل في إرسال رمز التحقق");
+        }
+        setVerifyModalOpen(true);
       } else if (error?.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error?.response?.status === 401) {

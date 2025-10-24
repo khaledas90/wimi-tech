@@ -34,6 +34,10 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [add, setadd] = useState<boolean>(true);
   const [register, setregister] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [filterPage, setFilterPage] = useState(1);
+  const [filterHasMore, setFilterHasMore] = useState(true);
 
   const urlfav = `${BaseUrl}users/favorites`;
   const token = Cookies.get("token");
@@ -60,6 +64,22 @@ export default function HomePage() {
     },
   ];
 
+  const categories = [
+    "الكل",
+    "الموضة والجمال",
+    "المنزل والمطبخ",
+    "الأطفال والألعاب",
+    "الإلكترونيات والإكسسوارات",
+    "الخدمات الصحية",
+    "الخدمات الغذائية",
+    "الضيافة والسكن",
+    "الصيانة والمقاولات",
+    "السيارات والنقل",
+    "الزراعة",
+    "المراكز التعليمية والتدريبية",
+    "العروض والتخفيضات",
+  ];
+
   // Show logo once
   useEffect(() => {
     const hasShownLogo = sessionStorage.getItem("hasShownLogo");
@@ -73,33 +93,104 @@ export default function HomePage() {
     }
   }, []);
 
-  const fetchProducts = async () => {
-    if (loadingMore || !hasMore) return;
+  const fetchProducts = async (isFilter = false, resetProducts = false) => {
+    if (loadingMore || (!hasMore && !isFilter)) return;
     setLoadingMore(true);
 
     try {
-      const res: ApiResponse<gethome> = await CallApi(
-        "get",
-        `${BaseUrl}main/main-screen?page=${page}&limit=10`
-      );
-      const newProducts = res.data.products;
+      let res: ApiResponse<gethome>;
 
-      setProducts((prev) => {
-        const existingIds = new Set(prev.map((p) => p._id));
-        const filteredNew = newProducts.filter((p) => !existingIds.has(p._id));
-        return [...prev, ...filteredNew];
-      });
+      if (
+        isFilter &&
+        selectedCategory &&
+        selectedCategory !== "الكل" &&
+        selectedCategory !== ""
+      ) {
+        res = await CallApi("post", `${BaseUrl}main/filter`, {
+          category: selectedCategory,
+        });
 
-      setPage((prev) => prev + 1);
+        const products = res.data?.products || [];
+        const pagination = res.data?.pagination || { totalPages: 0 };
 
-      if (newProducts.length === 0 || page >= res.data.pagination.totalPages) {
-        setHasMore(false);
+        if (resetProducts) {
+          setProducts(products);
+        } else {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p._id));
+            const filteredNew = products.filter((p) => !existingIds.has(p._id));
+            return [...prev, ...filteredNew];
+          });
+        }
+
+        setFilterPage((prev) => prev + 1);
+
+        if (products.length === 0 || filterPage >= pagination.totalPages) {
+          setFilterHasMore(false);
+        }
+      } else {
+        res = await CallApi(
+          "get",
+          `${BaseUrl}main/main-screen?page=${page}&limit=10`
+        );
+        const newProducts = res.data?.products || [];
+        const pagination = res.data?.pagination || { totalPages: 0 };
+
+        if (resetProducts) {
+          setProducts(newProducts);
+        } else {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p._id));
+            const filteredNew = newProducts.filter(
+              (p) => !existingIds.has(p._id)
+            );
+            return [...prev, ...filteredNew];
+          });
+        }
+
+        setPage((prev) => prev + 1);
+
+        if (newProducts.length === 0 || page >= pagination.totalPages) {
+          setHasMore(false);
+        }
       }
     } catch (error) {
       console.error("Error fetching products:", error);
+      toast.error("حدث خطأ أثناء جلب المنتجات");
     } finally {
       setLoadingMore(false);
     }
+  };
+
+  const handleCategoryFilter = async (category: string) => {
+    setSelectedCategory(category);
+    setIsFiltering(true);
+
+    // Reset pagination states
+    if (category === "الكل") {
+      setPage(1);
+      setHasMore(true);
+      setFilterPage(1);
+      setFilterHasMore(true);
+    } else {
+      setFilterPage(1);
+      setFilterHasMore(true);
+      setPage(1);
+      setHasMore(true);
+    }
+
+    await fetchProducts(true, true);
+    setIsFiltering(false);
+  };
+
+  const clearFilter = async () => {
+    setSelectedCategory("");
+    setPage(1);
+    setHasMore(true);
+    setFilterPage(1);
+    setFilterHasMore(true);
+    setProducts([]);
+    await fetchProducts(false, true);
   };
 
   useEffect(() => {
@@ -107,16 +198,29 @@ export default function HomePage() {
       if (
         window.innerHeight + window.scrollY >=
           document.body.offsetHeight - 300 &&
-        !loadingMore &&
-        hasMore
+        !loadingMore
       ) {
-        fetchProducts();
+        if (
+          selectedCategory &&
+          selectedCategory !== "الكل" &&
+          selectedCategory !== ""
+        ) {
+          // Load more filtered products
+          if (filterHasMore) {
+            fetchProducts(true, false);
+          }
+        } else {
+          // Load more normal products (including when "الكل" is selected)
+          if (hasMore) {
+            fetchProducts(false, false);
+          }
+        }
       }
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [loadingMore, hasMore]);
+  }, [loadingMore, hasMore, filterHasMore, selectedCategory]);
 
   // Initial load
   useEffect(() => {
@@ -124,7 +228,6 @@ export default function HomePage() {
   }, []);
 
   if (showLogo) return <LogoImageAnimation />;
-  if (products.length === 0 && !loadingMore) return <SliderSkeleton />;
 
   const handelfavorit = async (id: string) => {
     try {
@@ -166,6 +269,91 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Category Filter Section */}
+      <div className="w-full mt-8 sm:mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-lg">🏷️</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    تصفية حسب القسم
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    اختر القسم المفضل لديك
+                  </p>
+                </div>
+              </div>
+              {selectedCategory && (
+                <button
+                  onClick={clearFilter}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                >
+                  <span>مسح التصفية</span>
+                  <span className="text-xs">✕</span>
+                </button>
+              )}
+            </div>
+
+            {/* Category Slider */}
+            <div className="relative">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {categories.map((category, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleCategoryFilter(category)}
+                    disabled={isFiltering}
+                    className={`flex-shrink-0 px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 whitespace-nowrap ${
+                      selectedCategory === category
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg transform scale-105"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md"
+                    } ${
+                      isFiltering
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+
+              {/* Loading indicator */}
+              {isFiltering && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
+                  <div className="flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-lg border border-gray-200">
+                    <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm font-medium text-gray-700">
+                      جاري التصفية...
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Selected Category Display */}
+            {selectedCategory && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">القسم المحدد:</p>
+                    <p className="font-semibold text-purple-700">
+                      {selectedCategory}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Featured Products Section */}
       <div className="w-full mt-8 sm:mt-12 md:mt-16 lg:mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -173,11 +361,15 @@ export default function HomePage() {
           <div className="text-center mb-8 sm:mb-12">
             <div className="inline-flex items-center gap-2 mb-4">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#4C1D95] to-[#7C3AED] bg-clip-text text-transparent">
-                الأكثر مبيعاً
+                {selectedCategory
+                  ? `منتجات ${selectedCategory}`
+                  : "الأكثر مبيعاً"}
               </h2>
             </div>
             <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
-              اكتشف أفضل المنتجات الأكثر طلباً من عملائنا الكرام
+              {selectedCategory
+                ? `اكتشف أفضل منتجات ${selectedCategory} من عملائنا الكرام`
+                : "اكتشف أفضل المنتجات الأكثر طلباً من عملائنا الكرام"}
             </p>
           </div>
 
@@ -263,6 +455,15 @@ export default function HomePage() {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </section>
