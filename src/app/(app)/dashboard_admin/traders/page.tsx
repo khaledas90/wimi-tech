@@ -456,131 +456,136 @@ export default function TradersManagementPage() {
 
           {/* Table View (desktop only) */}
           <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-                <p className="text-gray-500 mt-4">جاري التحميل...</p>
-              </div>
-            ) : filteredTraders.length === 0 ? (
-              <div className="text-center py-12">
-                <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">
-                  لا يوجد تجار في هذه الصفحة
-                </p>
-              </div>
-            ) : (
-              <table className="min-w-full">
-                <TableHeader
-                  headers={[
-                    "الاسم",
-                    "الإيميل",
-                    "رقم الهاتف",
-                    "العنوان",
-                    "المحفظة",
-                    "الإجراءات",
-                  ]}
-                />
-                <tbody>
-                  {filteredTraders.map((trader) => (
-                    <tr
-                      key={trader._id}
-                      className="border-t border-gray-100 hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                            <Store className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {trader.firstName || "غير محدد"}{" "}
-                              {trader.lastName || "غير محدد"}
+            <div className="overflow-x-auto">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+                  <p className="text-gray-500 mt-4">جاري التحميل...</p>
+                </div>
+              ) : filteredTraders.length === 0 ? (
+                <div className="text-center py-12">
+                  <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">
+                    لا يوجد تجار في هذه الصفحة
+                  </p>
+                </div>
+              ) : (
+                <table className="min-w-full overflow-x-auto">
+                  <TableHeader
+                    headers={[
+                      "الاسم",
+                      "الإيميل",
+                      "رقم الهاتف",
+                      "العنوان",
+                      "المحفظة",
+                      "الإجراءات",
+                    ]}
+                  />
+                  <tbody>
+                    {filteredTraders.map((trader) => (
+                      <tr
+                        key={trader._id}
+                        className="border-t border-gray-100 hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                              <Store className="w-5 h-5 text-white" />
                             </div>
-                            <div className="flex items-center gap-2">
-                              <div className="text-sm text-gray-500">تاجر</div>
-                              {trader.block && (
-                                <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full font-medium">
-                                  محظور
-                                </span>
-                              )}
+                            <div>
+                              <div className="font-semibold text-gray-900">
+                                {trader.firstName || "غير محدد"}{" "}
+                                {trader.lastName || "غير محدد"}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm text-gray-500">
+                                  تاجر
+                                </div>
+                                {trader.block && (
+                                  <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full font-medium">
+                                    محظور
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {trader.email || "غير محدد"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {trader.phoneNumber || "غير محدد"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
-                          <span className="text-gray-600">
-                            {trader.address || "غير محدد"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-green-600">
-                            {((trader as any).wallet || 0).toLocaleString()} ر.س
-                          </span>
-                        </div>
-                      </td>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {trader.email || "غير محدد"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {trader.phoneNumber || "غير محدد"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {trader.address || "غير محدد"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-green-600">
+                              {((trader as any).wallet || 0).toLocaleString()}{" "}
+                              ر.س
+                            </span>
+                          </div>
+                        </td>
 
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            title="عرض التفاصيل"
-                            onClick={() => handleViewTrader(trader)}
-                            className="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                          <button
-                            title={trader.block ? "فك الحظر" : "حظر"}
-                            onClick={() => handleTraderBlock(trader)}
-                            className={`p-2 rounded-lg transition-colors duration-200 ${
-                              trader.block
-                                ? "text-green-500 hover:text-green-700 hover:bg-green-50"
-                                : "text-red-500 hover:text-red-700 hover:bg-red-50"
-                            }`}
-                          >
-                            <Ban className="w-5 h-5" />
-                          </button>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <button
+                              title="عرض التفاصيل"
+                              onClick={() => handleViewTrader(trader)}
+                              className="text-blue-500 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            <button
+                              title={trader.block ? "فك الحظر" : "حظر"}
+                              onClick={() => handleTraderBlock(trader)}
+                              className={`p-2 rounded-lg transition-colors duration-200 ${
+                                trader.block
+                                  ? "text-green-500 hover:text-green-700 hover:bg-green-50"
+                                  : "text-red-500 hover:text-red-700 hover:bg-red-50"
+                              }`}
+                            >
+                              <Ban className="w-5 h-5" />
+                            </button>
 
-                          <button
-                            title="حذف"
-                            onClick={() => handleDelete(trader)}
-                            className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
+                            <button
+                              title="حذف"
+                              onClick={() => handleDelete(trader)}
+                              className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
 
-                          <Link
-                            href={`/dashboard_admin/notification/${trader._id}`}
-                            className="text-purple-500 hover:text-purple-700 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
-                          >
-                            <Bell className="w-5 h-5" />
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                            <Link
+                              href={`/dashboard_admin/notification/${trader._id}`}
+                              className="text-purple-500 hover:text-purple-700 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200"
+                            >
+                              <Bell className="w-5 h-5" />
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </section>
 
