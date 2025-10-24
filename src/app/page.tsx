@@ -23,6 +23,7 @@ import { BaseUrl } from "./components/Baseurl";
 import Cookies from "js-cookie";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useFavorites } from "./contexts/FavoritesContext";
 import { LoginRequiredModal } from "./components/ui/Pop-up-login";
 import { CallApi } from "./lib/utilits";
 export default function HomePage() {
@@ -36,6 +37,7 @@ export default function HomePage() {
 
   const urlfav = `${BaseUrl}users/favorites`;
   const token = Cookies.get("token");
+  const { incrementFavoritesCount, decrementFavoritesCount } = useFavorites();
 
   const productSliderItems: ProductSliderItem[] = [
     {
@@ -130,60 +132,139 @@ export default function HomePage() {
         setregister(true);
         return;
       }
-      // The actual favorite handling is now done in the Card component
-      // This function is just for state management
-      setadd(true);
+
+      const product = products.find((p) => p._id === id);
+      if (product) {
+        setadd(!add);
+      }
     } catch (error) {
       console.error("Error in favorite handler:", error);
     }
   };
 
   return (
-    <section className="bg-white">
+    <section className="min-h-screen bg-gradient-to-br from-[#FAF5FF] via-white to-[#F5F0FF]">
       <SmartNavbar />
-      <div className="w-full bg-white pt-2 sm:pt-4 mt-28 lg:mt-16">
+
+      {/* Hero Section with Slider */}
+      <div className="w-full pt-2 sm:pt-4 mt-28 lg:mt-16">
         <div className="mx-auto p-2 sm:p-3 md:p-4 lg:p-5 text-black z-[10000]">
           {productSliderItems.length > 0 && (
-            <Slider
-              items={productSliderItems}
-              height="aspect-[16/9]"
-              objectFit="cover"
-              showNavigation={true}
-              showPagination={true}
-              autoPlayDelay={3000}
-            />
+            <div className="relative">
+              <Slider
+                items={productSliderItems}
+                height="aspect-[16/9]"
+                objectFit="cover"
+                showNavigation={true}
+                showPagination={true}
+                autoPlayDelay={3000}
+              />
+              {/* Overlay gradient for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none rounded-xl"></div>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="w-full bg-white mt-4 sm:mt-6 md:mt-8 lg:mt-10">
-        <div className="flex justify-center items-center text-2xl mb-3 sm:mb-4 md:mb-6">
-          <h2 className="text-[#1f2f5c] font-bold text-lg sm:text-xl md:text-2xl lg:text-3xl mb-3 sm:mb-4 md:mb-6 tracking-tight">
-            الأكثر مبيعاً
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2  px-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-          {products.map((product, index) => (
-            <div key={index} className="transition-all duration-300">
-              <Card
-                {...product}
-                handellove={() => handelfavorit(String(product._id))}
-              />
+      {/* Featured Products Section */}
+      <div className="w-full mt-8 sm:mt-12 md:mt-16 lg:mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#4C1D95] to-[#7C3AED] bg-clip-text text-transparent">
+                الأكثر مبيعاً
+              </h2>
             </div>
-          ))}
-        </div>
-
-        {loadingMore && (
-          <div className="text-center py-4 sm:py-6 md:py-8">
-            <p className="text-sm text-gray-500">
-              جاري تحميل المزيد من المنتجات...
+            <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto">
+              اكتشف أفضل المنتجات الأكثر طلباً من عملائنا الكرام
             </p>
           </div>
-        )}
+
+          {/* Products Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {products.map((product, index) => (
+              <div
+                key={index}
+                className="transition-all duration-500 hover:scale-105 hover:z-10"
+                style={{
+                  animationDelay: `${index * 100}ms`,
+                  animation: "fadeInUp 0.6s ease-out forwards",
+                }}
+              >
+                <Card
+                  {...product}
+                  handellove={() => handelfavorit(String(product._id))}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Loading State */}
+          {loadingMore && (
+            <div className="text-center py-8 sm:py-12">
+              <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-lg border border-gray-200">
+                <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-700">
+                  جاري تحميل المزيد من المنتجات...
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {products.length === 0 && !loadingMore && (
+            <div className="text-center py-16 sm:py-20">
+              <div className="text-6xl mb-6">🛍️</div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                لا توجد منتجات متاحة حالياً
+              </h3>
+              <p className="text-gray-500">سيتم إضافة منتجات جديدة قريباً</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Call to Action Section */}
+      <div className="mt-16 sm:mt-20 bg-gradient-to-r from-[#4C1D95] to-[#7C3AED] rounded-2xl mx-4 sm:mx-6 lg:mx-8 p-8 sm:p-12 text-center text-white">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-4">
+          تسوق الآن واحصل على أفضل العروض
+        </h3>
+        <p className="text-lg mb-6 opacity-90">
+          اكتشف آلاف المنتجات بأسعار تنافسية وجودة عالية
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <a
+            href="/search"
+            className="bg-white text-purple-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-colors shadow-lg"
+          >
+            تصفح المنتجات
+          </a>
+          <a
+            href="/view_carts"
+            className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-purple-600 transition-colors"
+          >
+            عرض السلة
+          </a>
+        </div>
+      </div>
+
       <LoginRequiredModal show={register} />
       <Footer />
+
+      {/* Custom CSS for animations */}
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </section>
   );
 }

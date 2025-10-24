@@ -11,6 +11,8 @@ import axios from "axios";
 import { BaseUrl } from "../Baseurl";
 import { useTrader } from "@/app/contexts/TraderContext";
 import { useUser } from "@/app/contexts/UserContext";
+import { useCart } from "@/app/contexts/CartContext";
+import { useFavorites } from "@/app/contexts/FavoritesContext";
 
 const SmartNavbar = () => {
   const router = useRouter();
@@ -19,13 +21,13 @@ const SmartNavbar = () => {
   const [showModal, setShowModal] = useState(false);
   const token = Cookies.get("token");
   const token_admin = Cookies.get("token_admin");
-  const [allProducts, setAllProducts] = useState(0);
   const [allnotificatio, setAllnotificatio] = useState(0);
 
-  // Use trader and user contexts
+  // Use contexts
   const { trader, logout: traderLogout } = useTrader();
   const { user, logout: userLogout } = useUser();
-  const url = `${BaseUrl}users/shopping`;
+  const { cartCount } = useCart();
+  const { favoritesCount } = useFavorites();
   const get_user_notification = `${BaseUrl}users/getMyNotification`;
   const controlNavbar = () => {
     const currentScrollY = window.scrollY;
@@ -49,20 +51,7 @@ const SmartNavbar = () => {
   }, [lastScrollY]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAllProducts(res.data.data.cartLength);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchProducts();
-  }, []);
-  useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchNotifications = async () => {
       try {
         const res = await axios.get(get_user_notification, {
           headers: { Authorization: `Bearer ${token}` },
@@ -72,7 +61,7 @@ const SmartNavbar = () => {
         console.log(error);
       }
     };
-    fetchProducts();
+    fetchNotifications();
   }, []);
   return (
     <>
@@ -121,8 +110,13 @@ const SmartNavbar = () => {
               href="/favorit"
               className="flex flex-col items-center hover:text-pink-300 transition transform hover:scale-110"
             >
-              <div className="p-2 rounded-full bg-white/10 hover:bg-pink-300/20 transition border-[2px] border-border-icon">
-                <Heart size={18} />
+              <div className="relative">
+                <div className="p-2 rounded-full bg-white/10 hover:bg-pink-300/20 transition border-[2px] border-border-icon">
+                  <Heart size={18} />
+                </div>
+                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                  {favoritesCount}
+                </span>
               </div>
             </Link>
 
@@ -137,7 +131,7 @@ const SmartNavbar = () => {
                   <ShoppingCart size={18} />
                 </div>
                 <span className="absolute -top-1 -right-1 bg-[#f0a136] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
-                  {allProducts}
+                  {cartCount}
                 </span>
               </div>
             </Link>

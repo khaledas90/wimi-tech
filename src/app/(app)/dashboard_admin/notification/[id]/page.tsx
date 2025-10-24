@@ -64,20 +64,8 @@ export default function Notigicatio() {
       <div className="p-6 space-y-8 max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <div className="flex items-center gap-4">
-              <Link
-                href="/dashboard_admin/traders"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span>العودة للتجار</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center">
-                <Bell className="w-8 h-8 text-white" />
-              </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
                   إرسال إشعار
@@ -90,10 +78,8 @@ export default function Notigicatio() {
           </div>
         </div>
 
-        {/* Notification Form */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
           <div className="max-w-2xl mx-auto space-y-6">
-            {/* User Type Selection */}
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">
                 نوع المستلم

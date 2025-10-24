@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { TraderProvider } from "./contexts/TraderContext";
 import { UserProvider } from "./contexts/UserContext";
+import { CartProvider } from "./contexts/CartContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -30,8 +32,12 @@ export default function RootLayout({
       <body className={`${tajawal.variable} font-sans antialiased`}>
         <TraderProvider>
           <UserProvider>
-            <Toaster position="top-right" />
-            {children}
+            <CartProvider>
+              <FavoritesProvider>
+                <Toaster position="top-right" />
+                {children}
+              </FavoritesProvider>
+            </CartProvider>
           </UserProvider>
         </TraderProvider>
       </body>

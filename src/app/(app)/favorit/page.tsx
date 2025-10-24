@@ -9,6 +9,9 @@ import Container from "@/app/components/Container";
 import SmartNavbar from "@/app/components/ui/Navbar";
 import toast from "react-hot-toast";
 import { LoginRequiredModal } from "@/app/components/ui/Pop-up-login";
+import { Card } from "@/app/components/ui/Card";
+import { useCart } from "@/app/contexts/CartContext";
+import { useFavorites } from "@/app/contexts/FavoritesContext";
 import React from "react";
 
 const urlfav = `${BaseUrl}users/favorites`;
@@ -18,6 +21,8 @@ export default function Favorite() {
   const [favorite, setFavorite] = useState<main_screen_Product[]>([]);
   const token = Cookies.get("token");
   const [register, setRegister] = useState<boolean>(false);
+  const { updateCartCount } = useCart();
+  const { decrementFavoritesCount } = useFavorites();
 
   useEffect(() => {
     const fetchFavorite = async () => {
@@ -56,6 +61,10 @@ export default function Favorite() {
 
       // إزالة المنتج من الواجهة
       setFavorite((prev) => prev.filter((product) => product._id !== id));
+
+      // Update favorites count
+      decrementFavoritesCount();
+
       toast.success("تم الحذف من المفضلة");
     } catch (error) {
       console.error("Error updating favorites:", error);
@@ -64,75 +73,65 @@ export default function Favorite() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-10 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF5FF] via-white to-[#F5F0FF]">
       <SmartNavbar />
       <Container>
         <LoginRequiredModal show={register} />
 
+        {/* Header Section */}
+        <div className="text-center py-12">
+          <h1 className="text-4xl font-bold text-[#4C1D95] mt-10 mb-4">
+            المفضلة
+          </h1>
+          <p className="text-gray-600 text-lg">
+            المنتجات التي أضفتها إلى قائمة المفضلة
+          </p>
+        </div>
+
         {favorite.length === 0 ? (
-          <div className="flex justify-center items-center mt-32">
-            <p className="text-center text-gray-500 text-lg">
-              لم تضف أي منتج إلى المفضلة بعد.
+          <div className="flex flex-col justify-center items-center mt-20 py-20">
+            <div className="text-8xl mb-6">💔</div>
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+              لا توجد منتجات في المفضلة
+            </h2>
+            <p className="text-gray-500 text-center max-w-md mb-8">
+              لم تضف أي منتج إلى المفضلة بعد. ابدأ بتصفح المنتجات وأضف المفضلة
+              لديك!
             </p>
+            <a
+              href="/"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              تصفح المنتجات
+            </a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-32">
-            {favorite.map((product) => (
-              <div
-                key={product._id}
-                className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
-              >
-                {/* زر القلب الأحمر */}
-                <button
-                  onClick={() => handelfavorit(product._id)}
-                  className="absolute top-3 right-3 z-10 text-red-600 hover:scale-110 transition-transform duration-200 text-2xl"
-                  title="إزالة من المفضلة"
-                >
-                  ❤️
-                </button>
-
-                <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden mb-2">
-                  <img
-                    src={product.images[0]}
-                    alt={product.title}
-                    className="object-contain max-h-full max-w-full transition-transform duration-500 hover:scale-110"
-                  />
-                </div>
-
-                <div className="p-5 flex flex-col justify-between mt-4">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-1 text-gray-800 dark:text-gray-200">
-                      {product.title}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-2 line-clamp-3">
-                      {product.description}
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mb-1">
-                      السعر:{" "}
-                      <span className="text-indigo-800 dark:text-indigo-300">
-                        {product.price}ر.س
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-0.5">
-                      التصنيف: {product.category}
-                    </p>
-                    <p
-                      className={`text-sm font-medium ${
-                        product.stockQuantity > 0
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {product.stockQuantity > 0
-                        ? `متوفر: ${product.stockQuantity}`
-                        : "غير متوفر"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="pb-16 mx-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {favorite.map((product) => (
+                <Card
+                  key={product._id}
+                  _id={product._id}
+                  title={product.title}
+                  description={product.description}
+                  images={product.images}
+                  category={product.category}
+                  price={product.price}
+                  createdAt={product.createdAt}
+                  discount={undefined}
+                  originalPrice={undefined}
+                  stockQuantity={product.stockQuantity}
+                  soldOut={product.stockQuantity === 0}
+                  love={true}
+                  handellove={() => handelfavorit(product._id)}
+                  packet_pieces={undefined}
+                  packet_price={undefined}
+                  piece_price_after_offer={undefined}
+                  packet_price_after_offer={undefined}
+                  reviews_avg={undefined}
+                />
+              ))}
+            </div>
           </div>
         )}
       </Container>

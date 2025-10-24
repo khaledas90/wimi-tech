@@ -49,11 +49,6 @@ export default function RequestsPage() {
   }, []);
 
   const fetchRequests = async () => {
-    if (!token) {
-      toast.error("يرجى تسجيل الدخول أولاً");
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await axios.get(`${BaseUrl}admin/req`, {
@@ -91,20 +86,21 @@ export default function RequestsPage() {
 
   const handleStatusUpdate = async (requestId: string) => {
     try {
-      const currentRequest = requests.find(r => r._id === requestId);
+      const currentRequest = requests.find((r) => r._id === requestId);
       if (!currentRequest) {
         toast.error("لم يتم العثور على الطلب");
         return;
       }
 
       // Toggle between pending and Delivered
-      const newStatus = currentRequest.status === "pending" ? "Delivered" : "pending";
-      
+      const newStatus =
+        currentRequest.status === "pending" ? "Delivered" : "pending";
+
       const response = await axios.patch(
         `${BaseUrl}admin/update-status`,
-        { 
+        {
           orderId: requestId,
-          amount: currentRequest.amount
+          amount: currentRequest.amount,
         },
         {
           headers: {
@@ -114,7 +110,8 @@ export default function RequestsPage() {
       );
 
       if (response.data.success) {
-        const statusText = newStatus === "Delivered" ? "تم التسليم" : "قيد الانتظار";
+        const statusText =
+          newStatus === "Delivered" ? "تم التسليم" : "قيد الانتظار";
         toast.success(`تم تحديث حالة الطلب إلى ${statusText}`);
         fetchRequests(); // Refresh the list
       } else {
@@ -133,9 +130,9 @@ export default function RequestsPage() {
     try {
       const response = await axios.patch(
         `${BaseUrl}admin/update-status`,
-        { 
+        {
           orderId: selectedRequest._id,
-          amount: confirmAmount
+          amount: confirmAmount,
         },
         {
           headers: {
@@ -145,7 +142,9 @@ export default function RequestsPage() {
       );
 
       if (response.data.success) {
-        toast.success(`تم تأكيد التسليم بالمبلغ ${confirmAmount.toLocaleString()} ر.س`);
+        toast.success(
+          `تم تأكيد التسليم بالمبلغ ${confirmAmount.toLocaleString()} ر.س`
+        );
         setShowConfirmModal(false);
         setSelectedRequest(null);
         fetchRequests(); // Refresh the list
@@ -161,26 +160,38 @@ export default function RequestsPage() {
   };
 
   const filteredRequests = requests.filter((request) => {
-    const matchesStatus = filterStatus === "all" || request.status === filterStatus;
-    const matchesSearch = 
+    const matchesStatus =
+      filterStatus === "all" || request.status === filterStatus;
+    const matchesSearch =
       request._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.traderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.userId.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesStatus && matchesSearch;
   });
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock, text: "قيد الانتظار" },
-      Delivered: { color: "bg-green-100 text-green-800", icon: CheckCircle, text: "تم التسليم" },
+      pending: {
+        color: "bg-yellow-100 text-yellow-800",
+        icon: Clock,
+        text: "قيد الانتظار",
+      },
+      Delivered: {
+        color: "bg-green-100 text-green-800",
+        icon: CheckCircle,
+        text: "تم التسليم",
+      },
     };
 
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config =
+      statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
     const Icon = config.icon;
 
     return (
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${config.color}`}>
+      <span
+        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${config.color}`}
+      >
         <Icon className="w-4 h-4" />
         {config.text}
       </span>
@@ -225,7 +236,9 @@ export default function RequestsPage() {
               disabled={refreshing}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors duration-200 disabled:opacity-50"
             >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+              />
               تحديث
             </button>
           </div>
@@ -237,7 +250,9 @@ export default function RequestsPage() {
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="flex items-center gap-2">
                 <Filter className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">فلترة حسب الحالة:</span>
+                <span className="text-sm font-medium text-gray-700">
+                  فلترة حسب الحالة:
+                </span>
               </div>
               <select
                 value={filterStatus}
@@ -268,8 +283,12 @@ export default function RequestsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">إجمالي الطلبات</p>
-                <p className="text-3xl font-bold text-gray-900">{requests.length}</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  إجمالي الطلبات
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {requests.length}
+                </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
                 <FileText className="w-8 h-8 text-white" />
@@ -280,9 +299,11 @@ export default function RequestsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">قيد الانتظار</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  قيد الانتظار
+                </p>
                 <p className="text-3xl font-bold text-yellow-600">
-                  {requests.filter(r => r.status === "pending").length}
+                  {requests.filter((r) => r.status === "pending").length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center">
@@ -294,9 +315,11 @@ export default function RequestsPage() {
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">تم التسليم</p>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  تم التسليم
+                </p>
                 <p className="text-3xl font-bold text-green-600">
-                  {requests.filter(r => r.status === "Delivered").length}
+                  {requests.filter((r) => r.status === "Delivered").length}
                 </p>
               </div>
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
@@ -316,7 +339,9 @@ export default function RequestsPage() {
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 text-lg">لا توجد طلبات</p>
-              <p className="text-gray-400 text-sm">لم يتم العثور على أي طلبات تطابق المعايير المحددة</p>
+              <p className="text-gray-400 text-sm">
+                لم يتم العثور على أي طلبات تطابق المعايير المحددة
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -345,7 +370,10 @@ export default function RequestsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRequests.map((request) => (
-                    <tr key={request._id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <tr
+                      key={request._id}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {request._id.slice(-8)}
                       </td>
@@ -404,15 +432,27 @@ export default function RequestsPage() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div className="bg-gray-50 rounded-xl p-4">
                 <h4 className="font-medium text-gray-900 mb-2">تفاصيل الطلب</h4>
                 <div className="space-y-2 text-sm text-gray-600">
-                  <p><span className="font-medium">رقم الطلب:</span> {selectedRequest._id.slice(-8)}</p>
-                  <p><span className="font-medium">معرف التاجر:</span> {selectedRequest.traderId.slice(-8)}</p>
-                  <p><span className="font-medium">معرف المستخدم:</span> {selectedRequest.userId.slice(-8)}</p>
-                  <p><span className="font-medium">المبلغ الحالي:</span> {selectedRequest.amount.toLocaleString()} ر.س</p>
+                  <p>
+                    <span className="font-medium">رقم الطلب:</span>{" "}
+                    {selectedRequest._id.slice(-8)}
+                  </p>
+                  <p>
+                    <span className="font-medium">معرف التاجر:</span>{" "}
+                    {selectedRequest.traderId.slice(-8)}
+                  </p>
+                  <p>
+                    <span className="font-medium">معرف المستخدم:</span>{" "}
+                    {selectedRequest.userId.slice(-8)}
+                  </p>
+                  <p>
+                    <span className="font-medium">المبلغ الحالي:</span>{" "}
+                    {selectedRequest.amount.toLocaleString()} ر.س
+                  </p>
                 </div>
               </div>
 

@@ -25,7 +25,9 @@ interface PaymentCardProps {
 }
 
 export default function PaymentCard({ orderData }: PaymentCardProps) {
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"tamara" | "invoice" | "emkan" | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "tamara" | "invoice" | "emkan" | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -33,12 +35,24 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
   const phone = Cookies.get("phone");
   const router = useRouter();
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     if (!orderData) return 0;
     return orderData.orders.reduce(
       (total, order) => total + order.price * order.quantity,
       0
     );
+  };
+
+  const calculateVAT15 = () => {
+    return calculateSubtotal() * 0.015; // 1.5% VAT
+  };
+
+  const calculateVAT10 = () => {
+    return calculateSubtotal() * 0.1; // 10% VAT
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() + calculateVAT15() + calculateVAT10();
   };
 
   const handlePayment = (method: "tamara" | "invoice" | "emkan") => {
@@ -55,7 +69,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           return;
         }
 
-        const totalAmount = calculateTotal();
+        const totalAmount = calculateTotal(); // Now includes taxes
         const orderDescription = orderData.orders
           .map((order) => order.title)
           .join(", ");
@@ -231,6 +245,58 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             <p className="text-green-600 text-sm mt-1">{success}</p>
           </div>
         )}
+
+        {/* Tax Breakdown */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+            تفاصيل الفاتورة
+          </h3>
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">المجموع الفرعي:</span>
+              <span className="text-gray-900 font-semibold">
+                {calculateSubtotal().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">
+                ضريبة القيمة المضافة (1.5%):
+              </span>
+              <span className="text-gray-900 font-semibold">
+                {calculateVAT15().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">
+                ضريبة القيمة المضافة (10%):
+              </span>
+              <span className="text-gray-900 font-semibold">
+                {calculateVAT10().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg px-3">
+              <span className="text-lg font-bold text-gray-900">
+                المبلغ المستحق:
+              </span>
+              <span className="text-xl font-bold text-purple-600">
+                {calculateTotal().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg px-3 border-2 border-green-200">
+              <span className="text-lg font-bold text-gray-900">
+                المجموع الكلي:
+              </span>
+              <span className="text-xl font-bold text-green-600">
+                {calculateTotal().toFixed(2)} ر.س
+              </span>
+            </div>
+          </div>
+        </div>
 
         <div className="space-y-4">
           <button

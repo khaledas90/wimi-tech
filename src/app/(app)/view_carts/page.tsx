@@ -10,6 +10,7 @@ import { ShoppingCart, Trash } from "lucide-react";
 import toast from "react-hot-toast";
 import { LoginRequiredModal } from "@/app/components/ui/Pop-up-login";
 import PaymentCard from "./_components/PaymentCart";
+import { useCart } from "@/app/contexts/CartContext";
 interface ProductWithType {
   _id: string;
   title: string;
@@ -45,10 +46,13 @@ interface Product {
 interface Ordershoping {
   _id: string;
   userId: string;
-  productId: Product | null;
-  traderId: string;
-  quantity: number;
-  totalPrice: number;
+  products: Array<{
+    productId: Product;
+    traderId: string;
+    price: number;
+    quantity: number;
+    _id: string;
+  }>;
   status?: string;
   paymentState?: string;
   orderDate: string;
@@ -67,6 +71,7 @@ export default function Favorite() {
   const [selectedProducts, setSelectedProducts] = useState<ProductWithType[]>(
     []
   );
+  const { updateCartCount } = useCart();
   const url = `${BaseUrl}users/shopping`;
   const deleteorder = `${BaseUrl}users/cancelled-order/`;
   const urlcreate = `${BaseUrl}fatora/create-payment`;
@@ -99,25 +104,29 @@ export default function Favorite() {
         );
 
         const ordersWithType: ProductWithType[] = res.data.data.orders
-          .filter((order) => order.productId)
-          .map((order) => ({
-            ...order.productId!,
-            type: "order",
-            quantity: order.quantity,
-            totalPrice: order.totalPrice,
-            orderId: order._id,
-            status: order.status || "Pending",
-            paymentState: order.paymentState || "Pending",
-          }));
+          .filter((order) => order.products && order.products.length > 0)
+          .flatMap((order) =>
+            order.products.map((product) => ({
+              ...product.productId,
+              type: "order",
+              quantity: product.quantity,
+              totalPrice: product.price * product.quantity,
+              orderId: order._id,
+              status: order.status || "Pending",
+              paymentState: order.paymentState || "Pending",
+            }))
+          );
 
         setAllProducts([...cartWithType, ...ordersWithType]);
+        // Update cart count in context
+        await updateCartCount();
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
 
     getCart();
-  }, []);
+  }, [updateCartCount]);
 
   const handlePayment = async (
     productId: string,
@@ -140,10 +149,11 @@ export default function Favorite() {
             {
               productId,
               quantity,
-              traderId: allProducts.find(p => p._id === productId)?.traderId || "",
+              traderId:
+                allProducts.find((p) => p._id === productId)?.traderId || "",
               price: unitPrice,
-            }
-          ]
+            },
+          ],
         },
         {
           headers: {
@@ -230,6 +240,9 @@ export default function Favorite() {
       setAllProducts((prev) =>
         prev.filter((p) => !(p._id === productId && p.type === "cart"))
       );
+
+      // Update cart count after successful removal
+      await updateCartCount();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "فشل حذف المنتج ❌");
     }
@@ -254,10 +267,11 @@ export default function Favorite() {
     setAllProducts((prev) =>
       prev.map((p) => {
         if (p._id === productId && p.type === "cart") {
+          const newQuantity = Math.max(1, (p?.quantity ?? 1) - 1); // Prevent quantity from going below 1
           return {
             ...p,
-            quantity: (p?.quantity ?? 0) - 1,
-            totalPrice: p.price * ((p?.quantity ?? 0) - 1),
+            quantity: newQuantity,
+            totalPrice: p.price * newQuantity,
           };
         }
         return p;
@@ -312,6 +326,75 @@ export default function Favorite() {
     setShowPaymentModal(true);
   };
 
+  const handleCompletePurchase = async () => {
+    try {
+      if (!token) {
+        setRegister(true);
+        return;
+      }
+
+      const cartProducts = allProducts.filter((p) => p.type === "cart");
+
+      if (cartProducts.length === 0) {
+        toast.error("لا توجد منتجات في السلة");
+        return;
+      }
+
+      const productsArray = cartProducts.map((product) => ({
+        productId: product._id,
+        quantity: product.quantity ?? 1,
+        traderId: product.traderId,
+        price: product.price * (product.quantity ?? 1),
+      }));
+
+      const res = await axios.post(
+        `${BaseUrl}orders`,
+        {
+          products: productsArray,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.data.success) {
+        // Update the state to move products from cart to orders
+        setAllProducts((prev) => {
+          const updatedProducts = prev.filter((p) => p.type !== "cart");
+
+          cartProducts.forEach((product) => {
+            const orderProduct: ProductWithType = {
+              ...product,
+              type: "order",
+              quantity: product.quantity ?? 1,
+              totalPrice: product.price * (product.quantity ?? 1),
+              status: "Pending",
+              paymentState: "Pending",
+              orderId: res.data.data._id || product._id,
+            };
+            updatedProducts.push(orderProduct);
+          });
+
+          return updatedProducts;
+        });
+
+        // Update cart count after successful order creation
+        await updateCartCount();
+        toast.success(
+          `تم إنشاء طلب واحد يحتوي على ${cartProducts.length} منتج بنجاح`
+        );
+      } else {
+        toast.error(res.data.message || "فشل في إنشاء الطلب");
+      }
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      toast.error(error.response?.data?.message || "حدث خطأ أثناء إنشاء الطلب");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FAF5FF] via-white to-[#F5F0FF] p-6 mt-12">
       <SmartNavbar />
@@ -349,7 +432,7 @@ export default function Favorite() {
                         الإجمالي
                       </th>
                       <th className="px-4 py-2 text-right text-sm font-semibold border-b">
-                        الدفع
+                        الاجراءات
                       </th>
                     </tr>
                   </thead>
@@ -417,20 +500,6 @@ export default function Favorite() {
                           <td className=" py-3 border-b flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() =>
-                                handlePayment(
-                                  product._id,
-                                  product.quantity ?? 1,
-                                  product.price
-                                )
-                              }
-                              className="flex items-center gap-2 bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-md hover:shadow-lg transition duration-200"
-                            >
-                              <ShoppingCart size={16} />
-                              <span>الدفع</span>
-                            </button>
-                            <button
-                              type="button"
                               onClick={() => handleRemoveFromCart(product._id)}
                               className="bg-red-500 text-white px-5 py-3 rounded-full text-xs hover:bg-red-600 transition"
                             >
@@ -441,6 +510,17 @@ export default function Favorite() {
                       ))}
                   </tbody>
                 </table>
+
+                <div className="mt-6 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleCompletePurchase}
+                    className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105"
+                  >
+                    <ShoppingCart size={20} />
+                    <span>اتمام الشراء</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
