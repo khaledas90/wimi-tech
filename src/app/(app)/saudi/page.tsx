@@ -77,7 +77,6 @@ export default function CertificateDetails() {
             />
           </div>
 
-          {/* Bank Section */}
           <div className="bg-[#f6f6fd] border-t border-b border-purple-100 px-8 py-10">
             <h2 className="text-xl font-bold text-purple-800 mb-6">
               الحسابات البنكية
@@ -103,7 +102,6 @@ export default function CertificateDetails() {
             </div>
           </div>
 
-          {/* Store Info */}
           <div className="px-8 py-10 bg-white">
             <h2 className="text-xl font-bold text-gray-800 mb-6">
               معلومات المتجر
@@ -114,7 +112,6 @@ export default function CertificateDetails() {
             </div>
           </div>
 
-          {/* Footer Note */}
           <div className="bg-[#fafafa] text-sm text-gray-600 text-center py-6 px-6 border-t border-gray-100 leading-loose">
             تم إصدار شهادة توثيق التجارة الإلكترونية بعد التحقق من البيانات دون
             أي مسؤولية على المركز السعودي للأعمال الاقتصادية فيما يخص جودة

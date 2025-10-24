@@ -95,30 +95,22 @@ const AddProductModal = ({
         phoneNumber: productFormData.phoneNumber || phoneNumber,
       };
 
-      console.log("New product to add:", newProduct);
-
       const existingProductsJson = Cookies.get("direct_payment_products");
-      console.log("Existing products JSON:", existingProductsJson);
 
       const existingProducts = existingProductsJson
         ? JSON.parse(existingProductsJson)
         : [];
 
-      console.log("Existing products parsed:", existingProducts);
-
       const updatedProducts = [...existingProducts, newProduct];
-      console.log("Updated products:", updatedProducts);
 
       Cookies.set("direct_payment_products", JSON.stringify(updatedProducts), {
         expires: 30,
         path: "/",
         secure: false,
-        sameSite: "lax",
+        sameSite: "None",
       });
 
-      // Verify the cookie was set
       const verifyCookie = Cookies.get("direct_payment_products");
-      console.log("Cookie verification:", verifyCookie);
 
       toast.success("تم إضافة المنتج بنجاح 🎉");
       onProductAdded();

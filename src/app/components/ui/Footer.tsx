@@ -12,9 +12,8 @@ import {
   FaWhatsapp,
 } from "react-icons/fa6";
 import Logo from "../../../../public/asset/images/ويمي تك.jpg";
-import saudi from "../../../../public/asset/images/المعرض السعودى للاعمال.jpg";
 import image1 from "../../../../public/asset/images/1.png";
-import image2 from "../../../../public/asset/images/2.jpg";
+import image2 from "../../../../public/asset/images/2.png";
 import image3 from "../../../../public/asset/images/3.png";
 import visaIcon from "../../../../public/asset/images/visa.svg";
 import mastercardIcon from "../../../../public/asset/images/mastercard.svg";
@@ -114,47 +113,61 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-bold mb-4 border-b border-purple-300 pb-2">
               معرض الصور
             </h3>
-            <div className="grid grid-cols-1 gap-3">
-              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="group">
                 <Link
                   href="https://maroof.sa/businesses/details/365522?pageType=1&userId=41203506-6e83-40be-8652-3f40f6278125"
                   target="_blank"
+                  className="block"
                 >
-                  <Image
-                    src={image1}
-                    alt="قم المعرف"
-                    width={200}
-                    height={120}
-                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
-                    unoptimized
-                  />
+                  <div className="bg-white rounded-xl  shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <Image
+                      src={image1}
+                      alt="قم المعرف"
+                      width={120}
+                      height={80}
+                      className="w-full h-20 object-contain mx-auto"
+                      unoptimized
+                    />
+                  </div>
                 </Link>
               </div>
-              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
-                <Link href="/saudi">
-                  <Image
-                    src={image2}
-                    alt="ضريبة القيمة المضافة"
-                    width={200}
-                    height={120}
-                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
-                    unoptimized
-                  />
+
+              <div className="group">
+                <Link
+                  href="https://drive.google.com/file/d/1JrF4HKsGf2VKBUT4r1JO_nL-3WAGZFjf/view?usp=drivesdk"
+                  target="_blank"
+                  className="block"
+                >
+                  <div className="bg-white rounded-xl   shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <Image
+                      src={image2}
+                      alt="ضريبة القيمة المضافة"
+                      width={120}
+                      height={80}
+                      className="w-full h-20 object-contain mx-auto"
+                      unoptimized
+                    />
+                  </div>
                 </Link>
               </div>
-              <div className="relative group overflow-hidden rounded-lg transition-all duration-300">
+
+              <div className="group">
                 <Link
                   href="https://drive.google.com/file/d/1wsazlpuIgdPF3Ij6T8DNDJqHUFqbXpEZ/view"
                   target="_blank"
+                  className="block"
                 >
-                  <Image
-                    src={image3}
-                    alt="شهادة المركز السعودي للأعمال"
-                    width={200}
-                    height={120}
-                    className="w-full h-32 object-contain cursor-pointer transition-transform duration-300 hover:scale-105"
-                    unoptimized
-                  />
+                  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                    <Image
+                      src={image3}
+                      alt="شهادة المركز السعودي للأعمال"
+                      width={180}
+                      height={100}
+                      className="w-full h-20 object-contain mx-auto"
+                      unoptimized
+                    />
+                  </div>
                 </Link>
               </div>
             </div>
@@ -229,12 +242,12 @@ const Footer: React.FC = () => {
               <div className="flex items-center gap-3 text-sm text-gray-100">
                 <Image
                   src={tamaraIcon}
-                  alt="تامارا"
+                  alt="تمارا"
                   width={24}
                   height={16}
                   className="object-contain"
                 />
-                <span>تامارا</span>
+                <span>تمارا</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-100">
                 <Image
@@ -394,8 +407,8 @@ const Footer: React.FC = () => {
 
                         <h3>فترة الإرجاع</h3>
                         <p>
-                          يمكنك طلب إرجاع معظم المنتجات خلال{" "}
-                          <strong>[عدد]</strong> يومًا من تاريخ استلام الطلب.
+                          يمكنك طلب إرجاع معظم المنتجات خلال <strong>7</strong>{" "}
+                          يومًا من تاريخ استلام الطلب.
                         </p>
 
                         <h3>شروط الإرجاع المقبولة:</h3>
@@ -449,8 +462,8 @@ const Footer: React.FC = () => {
                           </li>
                           <li>
                             تتم معالجة المبالغ المستردة عادةً خلال{" "}
-                            <strong>[عدد]</strong> أيام عمل من استلام المنتج
-                            المرتجع وفحصه.
+                            <strong>7</strong> أيام عمل من استلام المنتج المرتجع
+                            وفحصه.
                           </li>
                         </ul>
 
@@ -474,7 +487,7 @@ const Footer: React.FC = () => {
 
         {/* Important Links Section */}
         <div className="mt-8 border-t border-purple-400 pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
             <Link
               href="/"
               className="text-gray-300 hover:text-white transition text-sm"
@@ -505,23 +518,12 @@ const Footer: React.FC = () => {
             >
               تسجيل الدخول
             </Link>
-            <Link
-              href="/trade/auth"
-              className="text-gray-300 hover:text-white transition text-sm"
-            >
-              تسجيل التاجر
-            </Link>
+
             <Link
               href="/user_notification"
               className="text-gray-300 hover:text-white transition text-sm"
             >
               الإشعارات
-            </Link>
-            <Link
-              href="/saudi"
-              className="text-gray-300 hover:text-white transition text-sm"
-            >
-              المعرض السعودي
             </Link>
           </div>
         </div>

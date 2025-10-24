@@ -47,12 +47,6 @@ const OrdersTable = ({
     if (cookieData) {
       try {
         const parsedData = JSON.parse(cookieData);
-        console.log("Parsed cookie data:", parsedData);
-        console.log("Number of products:", parsedData.length);
-        console.log(
-          "Products for current phone:",
-          parsedData.filter((p: any) => p.phoneNumber === phoneNumber)
-        );
       } catch (error) {
         console.error("Error parsing cookie:", error);
       }
@@ -64,24 +58,13 @@ const OrdersTable = ({
 
   useEffect(() => {
     if (phoneNumber) {
-      // Verify cookie first
       verifyCookie();
 
-      // Read cookie data fresh each time
       const cookieData = Cookies.get("direct_payment_products");
-      console.log("OrdersTable - Cookie data:", cookieData);
-
       const Allorders = cookieData ? JSON.parse(cookieData) : [];
-      console.log("OrdersTable - Parsed orders:", Allorders);
 
-      // Filter orders by phone number
       const filteredOrders = Allorders.filter(
         (order: Order) => order.phoneNumber === phoneNumber
-      );
-      console.log(
-        "OrdersTable - Filtered orders for phone:",
-        phoneNumber,
-        filteredOrders
       );
 
       setOrders(filteredOrders);
@@ -89,19 +72,8 @@ const OrdersTable = ({
   }, [phoneNumber, refreshTrigger]);
 
   useEffect(() => {
-    // Clear selections when orders change
     setSelectedOrders([]);
   }, [orders]);
-
-  // Debug useEffect - runs on every render
-  useEffect(() => {
-    console.log("OrdersTable render - Current state:", {
-      phoneNumber,
-      ordersCount: orders.length,
-      orders,
-      refreshTrigger,
-    });
-  });
 
   // const fetchOrders = async () => {
   //   if (!phoneNumber) return;
@@ -135,8 +107,6 @@ const OrdersTable = ({
   // };
 
   const deleteOrder = async (orderId: string) => {
-    console.log("Deleting order with ID:", orderId);
-
     // Get all orders from cookie
     const cookieData = Cookies.get("direct_payment_products");
     const allOrders = cookieData ? JSON.parse(cookieData) : [];
@@ -153,7 +123,7 @@ const OrdersTable = ({
       expires: 30,
       path: "/",
       secure: false,
-      sameSite: "lax",
+      sameSite: "None",
     });
 
     // Update local state
