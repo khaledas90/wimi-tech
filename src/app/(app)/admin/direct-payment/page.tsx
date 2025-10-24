@@ -70,12 +70,10 @@ const DirectPaymentPage = () => {
       );
 
       if (checkResponse.data.success && checkResponse.data.data.bool === true) {
-        // User exists, show add product form
         setUserFound(true);
         setStep(2);
         toast.success("تم العثور على المستخدم");
       } else {
-        // User doesn't exist, show name input
         setUserFound(false);
         setStep(3);
         toast("المستخدم غير موجود، يرجى إدخال اسم المستخدم", { icon: "ℹ️" });
