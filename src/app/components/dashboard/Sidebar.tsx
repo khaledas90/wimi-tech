@@ -10,6 +10,7 @@ import {
   Bell,
   BadgeDollarSign,
   User,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -26,6 +27,7 @@ const navItems = [
     label: "المدفوعات المباشرة",
     icon: BadgeDollarSign,
   },
+  { href: "/admin/terms", label: "شروط الاستخدام", icon: FileText },
 ];
 
 export default function Sidebar() {

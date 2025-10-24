@@ -23,13 +23,11 @@ import emkanIcon from "../../../../public/asset/images/emkan.png";
 import tabbyIcon from "../../../../public/asset/images/tabby.svg";
 
 import { Dialog } from "@headlessui/react";
-import TermsModal from "./TermsModal";
 
 const Footer: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
-  const [termsModalOpen, setTermsModalOpen] = useState(false);
 
   const openPolicyModal = (title: string, content: React.ReactNode) => {
     setModalTitle(title);
@@ -385,15 +383,6 @@ const Footer: React.FC = () => {
 
               <li>
                 <button
-                  onClick={() => setTermsModalOpen(true)}
-                  className="hover:text-gray-300 w-full text-right"
-                >
-                  شروط الاستخدام
-                </button>
-              </li>
-
-              <li>
-                <button
                   onClick={() =>
                     openPolicyModal(
                       "سياسة الإرجاع والاستبدال",
@@ -562,11 +551,6 @@ const Footer: React.FC = () => {
           </Dialog.Panel>
         </div>
       </Dialog>
-
-      <TermsModal
-        isOpen={termsModalOpen}
-        onClose={() => setTermsModalOpen(false)}
-      />
     </>
   );
 };

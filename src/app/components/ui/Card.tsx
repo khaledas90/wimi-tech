@@ -132,199 +132,167 @@ export const Card: React.FC<CardProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-between rounded-xl sm:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 bg-white hover:bg-gradient-to-br hover:from-white hover:to-gray-50 group border border-gray-100 hover:border-gray-200">
-      {/* زر القلب المحسن */}
-      <div
-        className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm p-2.5 rounded-full cursor-pointer z-40 hover:bg-pink-50 hover:scale-110 transition-all duration-300 shadow-lg border border-pink-200 hover:border-pink-300"
+    <div className="group relative w-full h-full bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-200">
+      {/* Heart Button - Top Left */}
+      <button
         onClick={handleLoveToggle}
+        disabled={isAddingToFavorites}
+        className={`absolute top-2 left-2 z-20 p-1.5 rounded-full transition-all duration-200 ${
+          loveit
+            ? "bg-pink-500 text-white shadow-md"
+            : "bg-white/90 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+        } ${isAddingToFavorites ? "opacity-50 cursor-not-allowed" : ""}`}
         title={loveit ? "إزالة من المفضلة" : "إضافة للمفضلة"}
       >
         {isAddingToFavorites ? (
-          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-        ) : loveit ? (
-          <Heart
-            size={20}
-            className="w-5 h-5 sm:w-6 sm:h-6 text-pink-500 animate-pulse"
-            fill="#ec4899"
-            stroke="#ec4899"
-          />
+          <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
         ) : (
           <Heart
-            size={20}
-            className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 hover:text-pink-400 transition-colors"
-            fill="none"
-            stroke="#6b7280"
+            size={14}
+            className={loveit ? "fill-current" : ""}
+            fill={loveit ? "currentColor" : "none"}
           />
         )}
-      </div>
+      </button>
 
-      {/* Stock Badge */}
+      {/* Stock Badge - Top Right */}
       {stockQuantity <= 4 && stockQuantity > 0 && (
-        <div className="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold z-40 shadow-lg">
+        <div className="absolute top-2 right-2 z-20 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
           متبقي {stockQuantity}
         </div>
       )}
 
       {stockQuantity === 0 && (
-        <div className="absolute top-3 right-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold z-40 shadow-lg">
+        <div className="absolute top-2 right-2 z-20 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
           غير متوفر
         </div>
       )}
 
-      {/* الصورة */}
-      <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center overflow-hidden">
+      {/* Product Image */}
+      <div className="relative w-full aspect-[3/2] sm:aspect-[4/3] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
         <Image
           src={images?.[0] || "/no-image.png"}
           alt={title}
           fill
-          className="object-contain p-3 sm:p-4 md:p-6 transition-transform duration-700 group-hover:scale-110"
+          className="object-contain p-2 sm:p-3 lg:p-4 transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
           unoptimized
         />
 
-        {/* Enhanced Overlay with better animations */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out">
-          <div className="absolute bottom-0 left-0 right-0 p-4 text-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-100">
-            {/* Brand Logo */}
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <Image
-                  src={Logo}
-                  alt="Logo"
-                  width={16}
-                  height={16}
-                  className="object-contain rounded-full"
-                  unoptimized
-                />
-              </div>
-              <div className="text-white text-sm font-medium">ويمي تك</div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Link href={`/packet/${_id}`} className="flex-1">
-                  <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white  font-semibold px-2 py-1.5 text-base rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg">
-                    <Eye size={16} />
-                    عرض التفاصيل
-                  </button>
-                </Link>
-
-                <button
-                  onClick={handleAddToCart}
-                  disabled={isAddingToCart || stockQuantity === 0}
-                  className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white  font-semibold px-2 py-1.5 text-base rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg ${
-                    isAddingToCart || stockQuantity === 0
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {isAddingToCart ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    <ShoppingCart size={16} />
-                  )}
-                  {isAddingToCart
-                    ? "جاري الإضافة..."
-                    : stockQuantity === 0
-                    ? "غير متوفر"
-                    : "إضافة للسلة"}
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex gap-1.5">
+              <Link href={`/packet/${_id}`}>
+                <button className="bg-white text-gray-800 px-2 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors flex items-center gap-1">
+                  <Eye size={12} />
+                  عرض
                 </button>
-              </div>
-
-              {/* Favorite Button */}
+              </Link>
               <button
-                onClick={handleLoveToggle}
-                disabled={isAddingToFavorites}
-                className={`w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white  font-semibold px-2 py-1.5 text-base rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg ${
-                  isAddingToFavorites ? "opacity-50 cursor-not-allowed" : ""
+                onClick={handleAddToCart}
+                disabled={isAddingToCart || stockQuantity === 0}
+                className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
+                  isAddingToCart || stockQuantity === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-500 text-white hover:bg-blue-600"
                 }`}
               >
-                {isAddingToFavorites ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : loveit ? (
-                  <Heart size={16} fill="white" stroke="white" />
+                {isAddingToCart ? (
+                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <Heart size={16} fill="none" stroke="white" />
+                  <ShoppingCart size={12} />
                 )}
-                {isAddingToFavorites
-                  ? "جاري التحديث..."
-                  : loveit
-                  ? "إزالة من المفضلة"
-                  : "إضافة للمفضلة"}
+                {isAddingToCart ? "جاري..." : "إضافة"}
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* المحتوى */}
-      <div
-        className="p-4 sm:p-5 flex flex-col justify-start flex-grow gap-y-2 text-right bg-white"
-        dir="rtl"
-      >
-        <h2 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+      {/* Product Info */}
+      <div className="p-3 space-y-2">
+        {/* Title */}
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors leading-tight">
           {title}
-        </h2>
-        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 leading-relaxed">
-          {description}
-        </p>
+        </h3>
 
-        <div className="mt-2 flex items-center gap-2">
-          <span className="font-bold text-sm sm:text-base text-gray-900">
-            {price} ر.س
-          </span>
-          {originalPrice && (
-            <span className="text-gray-400 line-through text-xs">
-              {originalPrice} ر.س
+        {/* Price Section */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base font-bold text-gray-900">
+              {price} ر.س
             </span>
-          )}
+            {originalPrice && (
+              <span className="text-xs text-gray-400 line-through">
+                {originalPrice} ر.س
+              </span>
+            )}
+          </div>
           {discount && (
-            <span className="bg-gradient-to-r from-pink-400 to-rose-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-sm">
+            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
               خصم {discount}%
             </span>
           )}
         </div>
 
-        {packet_price && packet_pieces !== undefined && (
-          <p className="text-xs text-gray-600 mt-1">
-            بالكرتونة: {packet_price_after_offer ?? packet_price} ر.س (
-            {packet_pieces} قطعة)
-          </p>
-        )}
-
-        {typeof stockQuantity === "number" && (
-          <div className="mt-2 flex items-center justify-between">
-            <p
-              className={`text-xs font-semibold ${
-                stockQuantity === 0
-                  ? "text-red-500"
-                  : stockQuantity <= 4
-                  ? "text-orange-500"
-                  : "text-green-600"
-              }`}
-            >
-              {stockQuantity === 0
-                ? "غير متوفر"
+        {/* Stock and Rating */}
+        <div className="flex items-center justify-between">
+          <span
+            className={`text-xs font-medium px-2 py-1 rounded-full ${
+              stockQuantity === 0
+                ? "bg-red-100 text-red-600"
                 : stockQuantity <= 4
-                ? `متبقى ${stockQuantity}`
-                : `متوفر: ${stockQuantity}`}
-            </p>
-
-            {reviews_avg && (
-              <div className="flex items-center gap-1">
-                <span className="text-yellow-500 text-sm">★</span>
-                <span className="text-xs text-gray-600">{reviews_avg}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {soldOut && (
-          <span className="text-red-600 font-bold text-xs mt-1">
-            نفذت الكمية
+                ? "bg-orange-100 text-orange-600"
+                : "bg-green-100 text-green-600"
+            }`}
+          >
+            {stockQuantity === 0
+              ? "غير متوفر"
+              : stockQuantity <= 4
+              ? `متبقى ${stockQuantity}`
+              : `متوفر`}
           </span>
-        )}
+
+          {reviews_avg && (
+            <div className="flex items-center gap-1">
+              <span className="text-yellow-500 text-sm">★</span>
+              <span className="text-xs text-gray-600">{reviews_avg}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 pt-1">
+          <Link href={`/packet/${_id}`} className="flex-1">
+            <button className="w-full bg-gray-100 text-gray-700 py-1.5 px-2 rounded-md text-xs font-medium hover:bg-gray-200 transition-colors flex items-center justify-center gap-1">
+              <Eye size={12} />
+              <span className="hidden sm:inline">عرض</span>
+            </button>
+          </Link>
+          <button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart || stockQuantity === 0}
+            className={`flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1 ${
+              isAddingToCart || stockQuantity === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            {isAddingToCart ? (
+              <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <ShoppingCart size={12} />
+            )}
+            <span className="hidden sm:inline">
+              {isAddingToCart
+                ? "جاري..."
+                : stockQuantity === 0
+                ? "غير متوفر"
+                : "إضافة"}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

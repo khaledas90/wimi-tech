@@ -43,16 +43,43 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     );
   };
 
-  const calculateVAT15 = () => {
-    return calculateSubtotal() * 0.015; // 1.5% VAT
+  const test = () => {
+    let totalprice = calculateSubtotal();
+
+    const tenVlaue = calculateSubtotal() * 0.1; /* 2 */
+    const mainPrice = calculateSubtotal() / (15 / 100 + 1);
+
+    const onePointFiveVlaue = totalprice - mainPrice; /* 1 */
+
+    const val = tenVlaue * 0.15;
+    const AddedValue = onePointFiveVlaue + val; /* 3 */
+
+    const totalPrice = mainPrice + AddedValue + tenVlaue;
   };
 
-  const calculateVAT10 = () => {
-    return calculateSubtotal() * 0.1; // 10% VAT
+  test();
+
+  const calculateDiscountedPrice = () => {
+    const subtotal = calculateSubtotal();
+    return subtotal * 0.85;
+  };
+
+  const calculateAdministrativeFees = () => {
+    const discountedPrice = calculateDiscountedPrice();
+    return discountedPrice * 0.1; // 10% administrative fees
+  };
+
+  const calculateVAT = () => {
+    const discountedPrice = calculateDiscountedPrice();
+    const adminFees = calculateAdministrativeFees();
+    return (discountedPrice + adminFees) * 0.165; // 16.5% VAT
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateVAT15() + calculateVAT10();
+    const discountedPrice = calculateDiscountedPrice();
+    const adminFees = calculateAdministrativeFees();
+    const vat = calculateVAT();
+    return discountedPrice + adminFees + vat;
   };
 
   const handlePayment = (method: "tamara" | "invoice" | "emkan") => {
@@ -246,7 +273,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           </div>
         )}
 
-        {/* Tax Breakdown */}
+        {/* Pricing Breakdown */}
         <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
             تفاصيل الفاتورة
@@ -254,36 +281,44 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">المجموع الفرعي:</span>
+              <span className="text-gray-700 font-medium">السعر الأصلي:</span>
               <span className="text-gray-900 font-semibold">
                 {calculateSubtotal().toFixed(2)} ر.س
               </span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">
-                ضريبة القيمة المضافة (1.5%):
-              </span>
-              <span className="text-gray-900 font-semibold">
-                {calculateVAT15().toFixed(2)} ر.س
+              <span className="text-gray-700 font-medium">خصم (15%):</span>
+              <span className="text-red-600 font-semibold">
+                -{(calculateSubtotal() - calculateDiscountedPrice()).toFixed(2)}{" "}
+                ر.س
               </span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-gray-700 font-medium">
-                ضريبة القيمة المضافة (10%):
+                السعر بعد الخصم:
               </span>
               <span className="text-gray-900 font-semibold">
-                {calculateVAT10().toFixed(2)} ر.س
+                {calculateDiscountedPrice().toFixed(2)} ر.س
               </span>
             </div>
 
-            <div className="flex justify-between items-center py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg px-3">
-              <span className="text-lg font-bold text-gray-900">
-                المبلغ المستحق:
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">
+                الرسوم الإدارية (10%):
               </span>
-              <span className="text-xl font-bold text-purple-600">
-                {calculateTotal().toFixed(2)} ر.س
+              <span className="text-orange-600 font-semibold">
+                +{calculateAdministrativeFees().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">
+                ضريبة القيمة المضافة (16.5%):
+              </span>
+              <span className="text-blue-600 font-semibold">
+                +{calculateVAT().toFixed(2)} ر.س
               </span>
             </div>
 

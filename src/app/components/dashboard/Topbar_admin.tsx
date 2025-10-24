@@ -33,13 +33,13 @@ export default function Topbar_admin() {
     <div
       dir="rtl"
       className="
-        fixed top-0 left-0 z-30 h-16
+        fixed top-0 left-0 right-0 z-30 h-16
          bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] 
          shadow-lg
         flex items-center justify-between
         px-4 sm:px-6 lg:px-6
         backdrop-blur-md border-b border-gray-200
-        lg:left-0 lg:right-72
+        lg:right-64
       "
     >
       {/* الشعار والترحيب */}
