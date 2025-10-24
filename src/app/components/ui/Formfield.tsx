@@ -61,31 +61,50 @@ export default function FormField({
             <label className="block mb-1 text-sm">{field.label}</label>
 
             {field.type === "select" ? (
-              <div className="bg-purple-100 rounded-xl p-2 flex justify-between items-center text-center overflow-hidden">
-                {(field.options || dynamicOptions[field.name] || []).map(
-                  (opt, idx, arr) => (
-                    <div
-                      key={opt}
-                      className={`flex-1 py-2 cursor-pointer relative transition
-                        ${
-                          data[field.name] === opt
-                            ? "bg-purple-600 text-white"
-                            : "text-purple-800 hover:bg-purple-200"
-                        }
-                        ${idx === 0 ? "rounded-r-lg" : ""}
-                        ${idx === arr.length - 1 ? "rounded-l-lg" : ""}
-                        ${
-                          idx !== arr.length - 1
-                            ? "border-l border-purple-300"
-                            : ""
-                        }`}
-                      onClick={() => handelchange(field.name, opt)}
-                    >
-                      {opt}
-                    </div>
-                  )
-                )}
-              </div>
+              field.name === "describtion" ? (
+                <select
+                  name={field.name}
+                  value={data[field.name] || ""}
+                  onChange={(e) => handelchange(field.name, e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-right bg-white"
+                  required={field.requierd}
+                >
+                  <option value="">اختر وصف نشاطك التجاري</option>
+                  {(field.options || dynamicOptions[field.name] || []).map(
+                    (opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    )
+                  )}
+                </select>
+              ) : (
+                <div className="bg-purple-100 rounded-xl p-2 flex justify-between items-center text-center overflow-hidden">
+                  {(field.options || dynamicOptions[field.name] || []).map(
+                    (opt, idx, arr) => (
+                      <div
+                        key={opt}
+                        className={`flex-1 py-2 cursor-pointer relative transition
+                          ${
+                            data[field.name] === opt
+                              ? "bg-purple-600 text-white"
+                              : "text-purple-800 hover:bg-purple-200"
+                          }
+                          ${idx === 0 ? "rounded-r-lg" : ""}
+                          ${idx === arr.length - 1 ? "rounded-l-lg" : ""}
+                          ${
+                            idx !== arr.length - 1
+                              ? "border-l border-purple-300"
+                              : ""
+                          }`}
+                        onClick={() => handelchange(field.name, opt)}
+                      >
+                        {opt}
+                      </div>
+                    )
+                  )}
+                </div>
+              )
             ) : field.type === "password" ? (
               <div className="relative">
                 <input
@@ -94,7 +113,7 @@ export default function FormField({
                   value={data[field.name] || ""}
                   onChange={(e) => handelchange(field.name, e.target.value)}
                   placeholder={field.placeholder}
-                  className="w-full border rounded-md p-2 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600 text-right"
+                  className="w-full border border-gray-300 rounded-lg p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-right bg-white"
                 />
                 <button
                   type="button"
@@ -139,6 +158,7 @@ export default function FormField({
                 onChange={(e) =>
                   handelchange(field.name, e.target.files?.[0] || null)
                 }
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-right bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
               />
             ) : field.placeholder === "1234 5678 9012 3456" ? (
               <Cleave
@@ -148,7 +168,7 @@ export default function FormField({
                   handelchange(field.name, e.target.value.replace(/\s+/g, ""))
                 }
                 placeholder={field.placeholder}
-                className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-600 text-right"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-right bg-white"
                 inputMode="numeric"
               />
             ) : (
@@ -158,7 +178,7 @@ export default function FormField({
                 value={data[field.name] || ""}
                 onChange={(e) => handelchange(field.name, e.target.value)}
                 placeholder={field.placeholder}
-                className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent text-right bg-white"
                 required={field.requierd}
                 {...(field.inputMode ? { inputMode: field.inputMode } : {})}
               />

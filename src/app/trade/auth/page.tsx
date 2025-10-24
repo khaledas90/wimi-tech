@@ -69,8 +69,22 @@ export default function AuthTrader() {
     {
       name: "describtion",
       label: "وصف نشاطك التجاري",
-      type: "text",
+      type: "select",
       requierd: true,
+      options: [
+        "الموضة والجمال",
+        "المنزل والمطبخ",
+        "الأطفال والألعاب",
+        "الإلكترونيات والإكسسوارات",
+        "الخدمات الصحية",
+        "الخدمات الغذائية",
+        "الضيافة والسكن",
+        "الصيانة والمقاولات",
+        "السيارات والنقل",
+        "الزراعة",
+        "المراكز التعليمية والتدريبية",
+        "العروض والتخفيضات",
+      ],
     },
     {
       name: "nameOfbussinessActor",
@@ -102,7 +116,7 @@ export default function AuthTrader() {
     },
     {
       name: "imageOfcertificate",
-      label: "صورة من البطاقة الضريبية",
+      label: "صورة من الشهادة الضريبية",
       type: "file",
       requierd: true,
     },

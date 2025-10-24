@@ -20,14 +20,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div
-      className={`${tajawal.variable} font-tajawal flex flex-row-reverse min-h-screen`}
-    >
-      <div className="flex-1 ml-0 lg:mr-72 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
-        <Topbar_admin />
-        <main className="pt-20 w-full">{children}</main>
-      </div>
+    <div className={`${tajawal.variable} font-tajawal min-h-screen`}>
       <Sidebar_admin />
+      <div className="lg:mr-72 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
+        <Topbar_admin />
+        <main className="pt-16 w-full">{children}</main>
+      </div>
     </div>
   );
 }

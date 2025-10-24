@@ -44,7 +44,8 @@ export default function TradersManagementPage() {
   const [loadingTraderDetails, setLoadingTraderDetails] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
-  const [selectedTraderForWallet, setSelectedTraderForWallet] = useState<any>(null);
+  const [selectedTraderForWallet, setSelectedTraderForWallet] =
+    useState<any>(null);
   const [walletAmount, setWalletAmount] = useState("");
   const [walletLoading, setWalletLoading] = useState(false);
   const [modalData, setModalData] = useState<{
@@ -114,7 +115,9 @@ export default function TradersManagementPage() {
   const fetchTraderDetails = async (traderId: string) => {
     setLoadingTraderDetails(true);
     try {
-      const response = await axios.get(`${BaseUrl}admin/get-trader/${traderId}`);
+      const response = await axios.get(
+        `${BaseUrl}admin/get-trader/${traderId}`
+      );
       if (response.data.success) {
         setTraderDetails(response.data.data);
       } else {
@@ -166,14 +169,14 @@ export default function TradersManagementPage() {
     setWalletLoading(true);
     try {
       const response = await fetch(`${BaseUrl}admin/update-wallet`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           amount: amount,
-          traderId: selectedTraderForWallet._id
-        })
+          traderId: selectedTraderForWallet._id,
+        }),
       });
 
       const data = await response.json();
@@ -188,7 +191,7 @@ export default function TradersManagementPage() {
         toast.error(data.message || "فشل في تحديث المحفظة");
       }
     } catch (error) {
-      console.error('Error updating wallet:', error);
+      console.error("Error updating wallet:", error);
       toast.error("حدث خطأ أثناء تحديث المحفظة");
     } finally {
       setWalletLoading(false);
@@ -196,24 +199,29 @@ export default function TradersManagementPage() {
   };
 
   const extractGoogleMapsEmbedUrl = (googleMapLink: string) => {
-    // Extract coordinates or place ID from Google Maps link
-    // This is a simplified approach - you might need to adjust based on your specific link format
     try {
       const url = new URL(googleMapLink);
-      
+
       // Check if it's a Google Maps search URL
-      if (url.hostname.includes('google.com') && url.pathname.includes('/search')) {
+      if (
+        url.hostname.includes("google.com") &&
+        url.pathname.includes("/search")
+      ) {
         // Extract search query
-        const searchQuery = url.searchParams.get('q');
+        const searchQuery = url.searchParams.get("q");
         if (searchQuery) {
-          return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(searchQuery)}`;
+          return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(
+            searchQuery
+          )}`;
         }
       }
-      
+
       // For other Google Maps URLs, return a generic embed URL
-      return `https://www.google.com/maps/embed/v1/search?key=YOUR_API_KEY&q=${encodeURIComponent(googleMapLink)}`;
+      return `https://www.google.com/maps/embed/v1/search?key=YOUR_API_KEY&q=${encodeURIComponent(
+        googleMapLink
+      )}`;
     } catch (error) {
-      console.error('Error parsing Google Maps URL:', error);
+      console.error("Error parsing Google Maps URL:", error);
       return null;
     }
   };
@@ -341,14 +349,7 @@ export default function TradersManagementPage() {
           <Ban className="w-4 h-4" />
           <span>{trader.block ? "فك الحظر" : "حظر"}</span>
         </button>
-        <button
-          title="تحديث المحفظة"
-          onClick={() => handleUpdateWallet(trader)}
-          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-        >
-          <Edit className="w-4 h-4" />
-          <span>محفظة</span>
-        </button>
+
         <button
           title="حذف"
           onClick={() => handleDelete(trader)}
@@ -558,13 +559,7 @@ export default function TradersManagementPage() {
                           >
                             <Ban className="w-5 h-5" />
                           </button>
-                          <button
-                            title="تحديث المحفظة"
-                            onClick={() => handleUpdateWallet(trader)}
-                            className="text-green-500 hover:text-green-700 p-2 rounded-lg hover:bg-green-50 transition-colors duration-200"
-                          >
-                            <Edit className="w-5 h-5" />
-                          </button>
+
                           <button
                             title="حذف"
                             onClick={() => handleDelete(trader)}
@@ -650,30 +645,42 @@ export default function TradersManagementPage() {
                         <div className="flex items-center gap-3">
                           <Mail className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-sm text-gray-500">البريد الإلكتروني</p>
-                            <p className="font-medium text-gray-900">{traderDetails.email || "غير محدد"}</p>
+                            <p className="text-sm text-gray-500">
+                              البريد الإلكتروني
+                            </p>
+                            <p className="font-medium text-gray-900">
+                              {traderDetails.email || "غير محدد"}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Phone className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-sm text-gray-500">رقم الهاتف</p>
-                            <p className="font-medium text-gray-900">{traderDetails.phoneNumber || "غير محدد"}</p>
+                            <p className="font-medium text-gray-900">
+                              {traderDetails.phoneNumber || "غير محدد"}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <MapPin className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="text-sm text-gray-500">العنوان</p>
-                            <p className="font-medium text-gray-900">{traderDetails.address || "غير محدد"}</p>
+                            <p className="font-medium text-gray-900">
+                              {traderDetails.address || "غير محدد"}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <Calendar className="w-5 h-5 text-gray-400" />
                           <div>
-                            <p className="text-sm text-gray-500">تاريخ التسجيل</p>
+                            <p className="text-sm text-gray-500">
+                              تاريخ التسجيل
+                            </p>
                             <p className="font-medium text-gray-900">
-                              {moment(traderDetails.createdAt).format("YYYY/MM/DD HH:mm")}
+                              {moment(traderDetails.createdAt).format(
+                                "YYYY/MM/DD HH:mm"
+                              )}
                             </p>
                           </div>
                         </div>
@@ -681,7 +688,9 @@ export default function TradersManagementPage() {
                     </div>
 
                     {/* Business Information */}
-                    {(traderDetails.nationalId || traderDetails.Iban || traderDetails.nameOfbank) && (
+                    {(traderDetails.nationalId ||
+                      traderDetails.Iban ||
+                      traderDetails.nameOfbank) && (
                       <div className="bg-gray-50 rounded-xl p-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <CreditCard className="w-5 h-5 text-blue-600" />
@@ -692,8 +701,12 @@ export default function TradersManagementPage() {
                             <div className="flex items-center gap-3">
                               <FileText className="w-5 h-5 text-gray-400" />
                               <div>
-                                <p className="text-sm text-gray-500">الهوية الوطنية</p>
-                                <p className="font-medium text-gray-900">{traderDetails.nationalId}</p>
+                                <p className="text-sm text-gray-500">
+                                  الهوية الوطنية
+                                </p>
+                                <p className="font-medium text-gray-900">
+                                  {traderDetails.nationalId}
+                                </p>
                               </div>
                             </div>
                           )}
@@ -701,8 +714,12 @@ export default function TradersManagementPage() {
                             <div className="flex items-center gap-3">
                               <CreditCard className="w-5 h-5 text-gray-400" />
                               <div>
-                                <p className="text-sm text-gray-500">رقم الآيبان</p>
-                                <p className="font-medium text-gray-900">{traderDetails.Iban}</p>
+                                <p className="text-sm text-gray-500">
+                                  رقم الآيبان
+                                </p>
+                                <p className="font-medium text-gray-900">
+                                  {traderDetails.Iban}
+                                </p>
                               </div>
                             </div>
                           )}
@@ -710,8 +727,12 @@ export default function TradersManagementPage() {
                             <div className="flex items-center gap-3">
                               <FileText className="w-5 h-5 text-gray-400" />
                               <div>
-                                <p className="text-sm text-gray-500">اسم البنك</p>
-                                <p className="font-medium text-gray-900">{traderDetails.nameOfbank}</p>
+                                <p className="text-sm text-gray-500">
+                                  اسم البنك
+                                </p>
+                                <p className="font-medium text-gray-900">
+                                  {traderDetails.nameOfbank}
+                                </p>
                               </div>
                             </div>
                           )}
@@ -719,8 +740,12 @@ export default function TradersManagementPage() {
                             <div className="flex items-center gap-3">
                               <User className="w-5 h-5 text-gray-400" />
                               <div>
-                                <p className="text-sm text-gray-500">اسم صاحب الحساب</p>
-                                <p className="font-medium text-gray-900">{traderDetails.nameOfperson}</p>
+                                <p className="text-sm text-gray-500">
+                                  اسم صاحب الحساب
+                                </p>
+                                <p className="font-medium text-gray-900">
+                                  {traderDetails.nameOfperson}
+                                </p>
                               </div>
                             </div>
                           )}
@@ -736,29 +761,67 @@ export default function TradersManagementPage() {
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${traderDetails.verify ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              traderDetails.verify
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                            }`}
+                          ></div>
                           <div>
                             <p className="text-sm text-gray-500">حالة التحقق</p>
-                            <p className={`font-medium ${traderDetails.verify ? 'text-green-600' : 'text-red-600'}`}>
-                              {traderDetails.verify ? 'محقق' : 'غير محقق'}
+                            <p
+                              className={`font-medium ${
+                                traderDetails.verify
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
+                            >
+                              {traderDetails.verify ? "محقق" : "غير محقق"}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${traderDetails.block ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              traderDetails.block
+                                ? "bg-red-500"
+                                : "bg-green-500"
+                            }`}
+                          ></div>
                           <div>
                             <p className="text-sm text-gray-500">حالة الحظر</p>
-                            <p className={`font-medium ${traderDetails.block ? 'text-red-600' : 'text-green-600'}`}>
-                              {traderDetails.block ? 'محظور' : 'نشط'}
+                            <p
+                              className={`font-medium ${
+                                traderDetails.block
+                                  ? "text-red-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {traderDetails.block ? "محظور" : "نشط"}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${traderDetails.waiting ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              traderDetails.waiting
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                            }`}
+                          ></div>
                           <div>
-                            <p className="text-sm text-gray-500">قائمة الانتظار</p>
-                            <p className={`font-medium ${traderDetails.waiting ? 'text-yellow-600' : 'text-green-600'}`}>
-                              {traderDetails.waiting ? 'في الانتظار' : 'مقبول'}
+                            <p className="text-sm text-gray-500">
+                              قائمة الانتظار
+                            </p>
+                            <p
+                              className={`font-medium ${
+                                traderDetails.waiting
+                                  ? "text-yellow-600"
+                                  : "text-green-600"
+                              }`}
+                            >
+                              {traderDetails.waiting ? "في الانتظار" : "مقبول"}
                             </p>
                           </div>
                         </div>
@@ -772,22 +835,29 @@ export default function TradersManagementPage() {
                           <Globe className="w-5 h-5 text-purple-600" />
                           موقع التاجر على الخريطة
                         </h4>
-                        
+
                         {/* Copy Link Section */}
                         <div className="mb-4">
                           <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-500 mb-1">رابط الخريطة</p>
-                              <p className="text-sm text-gray-700 truncate" title={traderDetails.googleMapLink}>
+                              <p className="text-sm text-gray-500 mb-1">
+                                رابط الخريطة
+                              </p>
+                              <p
+                                className="text-sm text-gray-700 truncate"
+                                title={traderDetails.googleMapLink}
+                              >
                                 {traderDetails.googleMapLink}
                               </p>
                             </div>
                             <button
-                              onClick={() => copyToClipboard(traderDetails.googleMapLink)}
+                              onClick={() =>
+                                copyToClipboard(traderDetails.googleMapLink)
+                              }
                               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                                copiedLink 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                copiedLink
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-blue-100 text-blue-700 hover:bg-blue-200"
                               }`}
                             >
                               {copiedLink ? (
@@ -817,7 +887,9 @@ export default function TradersManagementPage() {
                             <div className="h-64 bg-gray-100 flex items-center justify-center">
                               <div className="text-center">
                                 <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                <p className="text-gray-600 mb-2">عرض الخريطة</p>
+                                <p className="text-gray-600 mb-2">
+                                  عرض الخريطة
+                                </p>
                                 <a
                                   href={traderDetails.googleMapLink}
                                   target="_blank"
@@ -830,7 +902,7 @@ export default function TradersManagementPage() {
                               </div>
                             </div>
                           </div>
-                          
+
                           {/* Alternative: Simple iframe approach (if you have Google Maps API key) */}
                           {/* Uncomment and add your API key if you want to show embedded map */}
                           {/*
@@ -857,7 +929,9 @@ export default function TradersManagementPage() {
                 ) : (
                   <div className="text-center py-12">
                     <AlertTriangle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg">فشل في تحميل تفاصيل التاجر</p>
+                    <p className="text-gray-500 text-lg">
+                      فشل في تحميل تفاصيل التاجر
+                    </p>
                   </div>
                 )}
               </div>
@@ -880,7 +954,8 @@ export default function TradersManagementPage() {
                         تحديث المحفظة
                       </h3>
                       <p className="text-sm text-gray-600">
-                        {selectedTraderForWallet.firstName} {selectedTraderForWallet.lastName}
+                        {selectedTraderForWallet.firstName}{" "}
+                        {selectedTraderForWallet.lastName}
                       </p>
                     </div>
                   </div>
@@ -903,7 +978,10 @@ export default function TradersManagementPage() {
                     </label>
                     <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                       <span className="font-semibold text-green-600">
-                        {((selectedTraderForWallet as any).wallet || 0).toLocaleString()} ر.س
+                        {(
+                          (selectedTraderForWallet as any).wallet || 0
+                        ).toLocaleString()}{" "}
+                        ر.س
                       </span>
                     </div>
                   </div>

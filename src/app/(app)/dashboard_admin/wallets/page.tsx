@@ -15,6 +15,8 @@ import {
   Filter,
   TrendingUp,
   TrendingDown,
+  Edit,
+  X,
 } from "lucide-react";
 
 // Define the wallet type based on the actual API response
@@ -37,6 +39,10 @@ export default function WalletsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBalance, setFilterBalance] = useState<string>("all");
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<WalletData | null>(null);
+  const [walletAmount, setWalletAmount] = useState("");
+  const [walletLoading, setWalletLoading] = useState(false);
   const token = Cookies.get("token_admin");
 
   useEffect(() => {
@@ -71,6 +77,57 @@ export default function WalletsPage() {
     setRefreshing(true);
     await fetchWallets();
     setRefreshing(false);
+  };
+
+  const handleUpdateWallet = (wallet: WalletData) => {
+    setSelectedWallet(wallet);
+    setWalletAmount((wallet.wallet || 0).toString());
+    setShowWalletModal(true);
+  };
+
+  const updateWalletAmount = async () => {
+    if (!selectedWallet || !walletAmount) {
+      toast.error("يرجى إدخال مبلغ صحيح");
+      return;
+    }
+
+    const amount = parseFloat(walletAmount);
+    if (isNaN(amount) || amount < 0) {
+      toast.error("يرجى إدخال مبلغ صحيح أكبر من أو يساوي صفر");
+      return;
+    }
+
+    setWalletLoading(true);
+    try {
+      const response = await fetch(`${BaseUrl}admin/update-wallet`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          amount: amount,
+          traderId: selectedWallet._id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("تم تحديث المحفظة بنجاح");
+        setShowWalletModal(false);
+        setSelectedWallet(null);
+        setWalletAmount("");
+        fetchWallets(); // Refresh the wallets data
+      } else {
+        toast.error(data.message || "فشل في تحديث المحفظة");
+      }
+    } catch (error) {
+      console.error("Error updating wallet:", error);
+      toast.error("حدث خطأ أثناء تحديث المحفظة");
+    } finally {
+      setWalletLoading(false);
+    }
   };
 
   const filteredWallets = wallets.filter((wallet) => {
@@ -293,9 +350,9 @@ export default function WalletsPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       الرصيد
                     </th>
-                    {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                       الإجراءات
-                     </th> */}
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      الإجراءات
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -351,16 +408,18 @@ export default function WalletsPage() {
                             </span>
                           </div>
                         </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <button
-                              className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                              title="عرض التفاصيل"
+                              onClick={() => handleUpdateWallet(wallet)}
+                              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                              title="تحديث المحفظة"
                             >
-                              <Eye className="w-5 h-5" />
+                              <Edit className="w-4 h-4" />
+                              <span>تحديث</span>
                             </button>
                           </div>
-                        </td> */}
+                        </td>
                       </tr>
                     );
                   })}
@@ -370,6 +429,89 @@ export default function WalletsPage() {
           )}
         </div>
       </div>
+
+      {/* Wallet Update Modal */}
+      {showWalletModal && selectedWallet && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <DollarSign className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      تحديث المحفظة
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {selectedWallet.firstName} {selectedWallet.lastName}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowWalletModal(false);
+                    setSelectedWallet(null);
+                    setWalletAmount("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    المبلغ الحالي
+                  </label>
+                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <span className="font-semibold text-green-600">
+                      {(selectedWallet.wallet || 0).toLocaleString()} ر.س
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    المبلغ الجديد
+                  </label>
+                  <input
+                    type="number"
+                    value={walletAmount}
+                    onChange={(e) => setWalletAmount(e.target.value)}
+                    placeholder="أدخل المبلغ الجديد"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-black"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => {
+                    setShowWalletModal(false);
+                    setSelectedWallet(null);
+                    setWalletAmount("");
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={updateWalletAmount}
+                  disabled={walletLoading}
+                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {walletLoading ? "جاري التحديث..." : "تحديث المحفظة"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
