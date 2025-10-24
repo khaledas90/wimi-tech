@@ -694,28 +694,9 @@ export default function Favorite() {
                           <p className="text-xs text-gray-600">
                             الكمية: {product.quantity || 1}
                           </p>
-                          <p className="text-xs text-gray-600">
-                            السعر: {product.price} ر.س
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-purple-600 text-sm">
-                            {product.price * (product.quantity || 1)} ر.س
-                          </p>
                         </div>
                       </div>
                     ))}
-                  </div>
-                  <div className="mt-3 pt-3 border-t">
-                    <p className="font-bold text-lg text-purple-600">
-                      الإجمالي:{" "}
-                      {selectedProducts.reduce(
-                        (sum, product) =>
-                          sum + product.price * (product.quantity || 1),
-                        0
-                      )}{" "}
-                      ر.س
-                    </p>
                   </div>
                 </div>
 

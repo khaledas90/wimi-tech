@@ -13,37 +13,37 @@ export function OrderStatusBadge({ status, className }: OrderStatusBadgeProps) {
         return {
           label: "في الانتظار",
           icon: Clock,
-          className: "bg-pending-light text-pending border-pending/20",
+          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
         };
       case "confirmed":
         return {
           label: "مؤكد",
           icon: CheckCircle,
-          className: "bg-primary-light text-primary border-primary/20",
+          className: "bg-blue-100 text-blue-800 border-blue-200",
         };
       case "shipped":
         return {
           label: "تم الشحن",
           icon: Truck,
-          className: "bg-warning-light text-warning border-warning/20",
+          className: "bg-orange-100 text-orange-800 border-orange-200",
         };
       case "delivered":
         return {
           label: "تم التسليم",
           icon: Package,
-          className: "bg-success-light text-success border-success/20",
+          className: "bg-green-100 text-green-800 border-green-200",
         };
       case "cancelled":
         return {
           label: "ملغي",
           icon: XCircle,
-          className: "bg-error-light text-error border-error/20",
+          className: "bg-red-100 text-red-800 border-red-200",
         };
       default:
         return {
           label: status,
           icon: Clock,
-          className: "bg-muted text-muted-foreground border-border",
+          className: "bg-gray-100 text-gray-800 border-gray-200",
         };
     }
   };

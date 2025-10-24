@@ -43,43 +43,37 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     );
   };
 
-  const test = () => {
-    let totalprice = calculateSubtotal();
 
-    const tenVlaue = calculateSubtotal() * 0.1; /* 2 */
-    const mainPrice = calculateSubtotal() / (15 / 100 + 1);
-
-    const onePointFiveVlaue = totalprice - mainPrice; /* 1 */
-
-    const val = tenVlaue * 0.15;
-    const AddedValue = onePointFiveVlaue + val; /* 3 */
-
-    const totalPrice = mainPrice + AddedValue + tenVlaue;
+  const calculateTenValue = () => {
+    return calculateSubtotal() * 0.1; // 10% of subtotal
   };
 
-  test();
-
-  const calculateDiscountedPrice = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal * 0.85;
+  const calculateMainPrice = () => {
+    return calculateSubtotal() / (15 / 100 + 1); // Base price calculation
   };
 
-  const calculateAdministrativeFees = () => {
-    const discountedPrice = calculateDiscountedPrice();
-    return discountedPrice * 0.1; // 10% administrative fees
+  const calculateOnePointFiveValue = () => {
+    const totalPrice = calculateSubtotal();
+    const mainPrice = calculateMainPrice();
+    return totalPrice - mainPrice;
   };
 
-  const calculateVAT = () => {
-    const discountedPrice = calculateDiscountedPrice();
-    const adminFees = calculateAdministrativeFees();
-    return (discountedPrice + adminFees) * 0.165; // 16.5% VAT
+  const calculateVal = () => {
+    const tenValue = calculateTenValue();
+    return tenValue * 0.15; // 15% of tenValue
+  };
+
+  const calculateAddedValue = () => {
+    const onePointFiveValue = calculateOnePointFiveValue();
+    const val = calculateVal();
+    return onePointFiveValue + val;
   };
 
   const calculateTotal = () => {
-    const discountedPrice = calculateDiscountedPrice();
-    const adminFees = calculateAdministrativeFees();
-    const vat = calculateVAT();
-    return discountedPrice + adminFees + vat;
+    const mainPrice = calculateMainPrice();
+    const addedValue = calculateAddedValue();
+    const tenValue = calculateTenValue();
+    return mainPrice + addedValue + tenValue;
   };
 
   const handlePayment = (method: "tamara" | "invoice" | "emkan") => {
@@ -281,44 +275,23 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">السعر الأصلي:</span>
+              <span className="text-gray-700 font-medium">السعر:</span>
               <span className="text-gray-900 font-semibold">
-                {calculateSubtotal().toFixed(2)} ر.س
+                {calculateMainPrice().toFixed(2)} ر.س
               </span>
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">خصم (15%):</span>
-              <span className="text-red-600 font-semibold">
-                -{(calculateSubtotal() - calculateDiscountedPrice()).toFixed(2)}{" "}
-                ر.س
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">
-                السعر بعد الخصم:
-              </span>
-              <span className="text-gray-900 font-semibold">
-                {calculateDiscountedPrice().toFixed(2)} ر.س
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">
-                الرسوم الإدارية (10%):
-              </span>
-              <span className="text-orange-600 font-semibold">
-                +{calculateAdministrativeFees().toFixed(2)} ر.س
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">
-                ضريبة القيمة المضافة (16.5%):
-              </span>
+              <span className="text-gray-700 font-medium">ضريبة القيمة المضافة (15%):</span>
               <span className="text-blue-600 font-semibold">
-                +{calculateVAT().toFixed(2)} ر.س
+                +{calculateVal().toFixed(2)} ر.س
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">رسوم ادارية (10%):</span>
+              <span className="text-orange-600 font-semibold">
+                +{calculateTenValue().toFixed(2)} ر.س
               </span>
             </div>
 
