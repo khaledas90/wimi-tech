@@ -39,6 +39,7 @@ interface UserInfo {
 const DirectPaymentPage = () => {
   const [step, setStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [userName, setUserName] = useState("");
   const [userFound, setUserFound] = useState(false);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,22 +62,23 @@ const DirectPaymentPage = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${BaseUrl}traders/checkFoundUser`,
+      // First check if user exists
+      const checkResponse = await axios.post(
+        `${BaseUrl}traders/checkUserExist`,
         { phoneNumber },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (response.data.success) {
+      if (checkResponse.data.success && checkResponse.data.data.bool === true) {
+        // User exists, show add product form
         setUserFound(true);
-        setUserId(response.data.data.userId._id);
         setStep(2);
         toast.success("تم العثور على المستخدم");
-        setDataUser(response.data.data.userId);
       } else {
+        // User doesn't exist, show name input
         setUserFound(false);
         setStep(3);
-        toast("المستخدم غير موجود، يرجى إكمال بيانات التسجيل", { icon: "ℹ️" });
+        toast("المستخدم غير موجود، يرجى إدخال اسم المستخدم", { icon: "ℹ️" });
       }
     } catch (error: any) {
       if (
@@ -86,7 +88,7 @@ const DirectPaymentPage = () => {
       ) {
         setUserFound(false);
         setStep(3);
-        toast("المستخدم غير موجود، يرجى إكمال بيانات التسجيل", { icon: "ℹ️" });
+        toast("المستخدم غير موجود، يرجى إدخال اسم المستخدم", { icon: "ℹ️" });
       } else {
         toast.error("خطأ في البحث عن المستخدم");
       }
@@ -95,9 +97,40 @@ const DirectPaymentPage = () => {
     }
   };
 
+  const createUser = async () => {
+    if (!phoneNumber.trim() || !userName.trim()) {
+      toast.error("يرجى إدخال رقم الهاتف واسم المستخدم");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${BaseUrl}traders/checkFoundUser`,
+        { phoneNumber, userName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        setUserFound(true);
+        setUserId(response.data.data.userId._id);
+        setStep(2);
+        toast.success("تم إنشاء المستخدم بنجاح");
+        setDataUser(response.data.data.userId);
+      } else {
+        toast.error("فشل في إنشاء المستخدم");
+      }
+    } catch (error: any) {
+      toast.error("خطأ في إنشاء المستخدم");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setStep(1);
     setPhoneNumber("");
+    setUserName("");
     setUserFound(false);
     setUserId("");
     setDataUser(undefined);
@@ -172,7 +205,6 @@ const DirectPaymentPage = () => {
                 إدارة الطلبات والمدفوعات المباشرة
               </p>
             </div>
-
             <div className="flex justify-center mt-4 sm:mt-6">
               <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
                 <div
@@ -260,42 +292,13 @@ const DirectPaymentPage = () => {
           {step === 2 && userFound && (
             <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 border border-gray-100">
               <div className="text-center mb-4 sm:mb-6">
-                <section dir="rtl" className="w-full max-w-md mx-auto">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
-                    <Check className="w-8 h-8 sm:w-10 sm:h-10 text-green-500 mx-auto mb-2 sm:mb-3" />
-                    <h2 className="text-lg sm:text-xl md:text-2xl mb-3 sm:mb-5 font-semibold bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] bg-clip-text text-transparent">
-                      تم العثور على العميل
-                    </h2>
-
-                    <dl className="grid grid-cols-1 gap-2 sm:gap-3 text-xs sm:text-sm">
-                      <div className="flex items-start justify-between gap-3 sm:gap-4">
-                        <dt className="text-gray-500">اسم العميل</dt>
-                        <dd className="text-gray-900 font-medium truncate">
-                          {dataUser?.firstName || "—"}{" "}
-                          {dataUser?.lastName || "—"}
-                        </dd>
-                      </div>
-                      <div className="flex items-start justify-between gap-3 sm:gap-4">
-                        <dt className="text-gray-500">البريد الإلكتروني</dt>
-                        <dd className="text-gray-900 font-medium truncate">
-                          {dataUser?.email}
-                        </dd>
-                      </div>
-                      <div className="flex items-start justify-between gap-3 sm:gap-4">
-                        <dt className="text-gray-500">رقم الهاتف</dt>
-                        <dd className="text-gray-900 font-medium">
-                          {dataUser?.phoneNumber}
-                        </dd>
-                      </div>
-                      <div className="flex items-start justify-between gap-3 sm:gap-4">
-                        <dt className="text-gray-500">تاريخ الإنشاء</dt>
-                        <dd className="text-gray-900 font-medium">
-                          {toArabicFullDate(dataUser?.createdAt ?? "")}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </section>
+                <Check className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-green-500 mx-auto mb-3 sm:mb-4" />
+                <h2 className="text-lg sm:text-xl md:text-2xl font-semibold bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] bg-clip-text text-transparent">
+                  تم العثور على العميل
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
+                  رقم الهاتف: {phoneNumber}
+                </p>
               </div>
 
               <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
@@ -315,7 +318,7 @@ const DirectPaymentPage = () => {
                 </div>
 
                 <OrdersTable
-                  phoneNumber={dataUser?.phoneNumber || ""}
+                  phoneNumber={phoneNumber}
                   onOrderDeleted={handleOrderDeleted}
                   onSendBulkPaymentLinks={handleBulkSendPaymentLinks}
                   refreshTrigger={refreshTrigger}
@@ -346,42 +349,34 @@ const DirectPaymentPage = () => {
               </div>
 
               <div className="mb-4 sm:mb-6">
-                <FormField
-                  fields={[
-                    {
-                      name: "phoneNumber",
-                      label: "رقم الهاتف",
-                      type: "phoneNumber" as any,
-                      requierd: true,
-                    },
-                  ]}
-                  data={{ phoneNumber }}
-                  onChange={(data) => setPhoneNumber(data.phoneNumber || "")}
-                />
-              </div>
-
-              <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
-                    إدارة الطلبات
-                  </h3>
-                  <div className="flex gap-2 sm:gap-3">
-                    <button
-                      onClick={() => setShowAddProductModal(true)}
-                      className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition duration-300 shadow-md text-sm sm:text-base"
-                    >
-                      <Plus size={16} className="sm:w-5 sm:h-5" />
-                      إضافة منتج جديد
-                    </button>
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 mb-2">رقم الهاتف:</p>
+                    <p className="font-semibold text-gray-900">{phoneNumber}</p>
                   </div>
-                </div>
 
-                <OrdersTable
-                  phoneNumber={phoneNumber}
-                  onOrderDeleted={handleOrderDeleted}
-                  onSendBulkPaymentLinks={handleBulkSendPaymentLinks}
-                  refreshTrigger={refreshTrigger}
-                />
+                  <FormField
+                    fields={[
+                      {
+                        name: "userName",
+                        label: "اسم المستخدم",
+                        type: "text" as any,
+                        placeholder: "أدخل اسم المستخدم",
+                        requierd: true,
+                      },
+                    ]}
+                    data={{ userName }}
+                    onChange={(data) => setUserName(data.userName || "")}
+                  />
+
+                  <button
+                    onClick={createUser}
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#334155] text-white py-2 sm:py-3 rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-sm sm:text-base"
+                  >
+                    {loading ? "جاري إنشاء المستخدم..." : "إنشاء المستخدم"}
+                  </button>
+                </div>
               </div>
 
               <div className="flex space-x-3 sm:space-x-4 rtl:space-x-reverse mt-4 sm:mt-6">
