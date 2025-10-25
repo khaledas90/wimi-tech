@@ -287,7 +287,7 @@ export default function OrderDetailsPage() {
                       ضريبة القيمة المضافة (15%):
                     </span>
                     <span className="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg shadow-sm">
-                      +{calculateVal().toFixed(2)} ر.س
+                      +{calculateAddedValue().toFixed(2)} ر.س
                     </span>
                   </div>
 

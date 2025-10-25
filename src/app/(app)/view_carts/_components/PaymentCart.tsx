@@ -76,6 +76,14 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     return mainPrice + addedValue + tenValue;
   };
 
+  
+  // console.log(calculateMainPrice());   // 4304.347826086957
+  // console.log(calculateAddedValue());   // 719.902173913043
+  // console.log(calculateTenValue());   // 495
+  // console.log(calculateVal());   // 74.25
+  // console.log(calculateOnePointFiveValue());   // 645.652173913043
+  // console.log(calculateTotal());   // 5519.25
+
   const handlePayment = (method: "tamara" | "invoice" | "emkan") => {
     setSelectedPaymentMethod(method);
     setError(null);
@@ -284,7 +292,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-gray-700 font-medium">ضريبة القيمة المضافة (15%):</span>
               <span className="text-blue-600 font-semibold">
-                +{calculateVal().toFixed(2)} ر.س
+                +{calculateAddedValue().toFixed(2)} ر.س
               </span>
             </div>
 
