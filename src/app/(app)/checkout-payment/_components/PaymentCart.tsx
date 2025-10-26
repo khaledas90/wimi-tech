@@ -97,7 +97,7 @@ export default function PaymentCard({
             console.log(response.data.result);
             setSuccess("تم إنشاء  بنجاح");
             if (response.data.data?.result?.checkout_url) {
-              window.open(response.data.data.result.checkout_url, "_blank");
+              window.location.href = response.data.data.result.checkout_url;
               setSuccess("تم إنشاء رابط الدفع بنجاح");
             } else {
               setError("لم يتم العثور على رابط الدفع");
@@ -127,7 +127,7 @@ export default function PaymentCard({
             setSuccess("تم إنشاء رابط الدفع عبر تمارا بنجاح");
 
             if (response.data?.data.checkoutUrl) {
-              window.open(response.data.data.checkoutUrl, "_blank");
+              window.location.href = response.data.data.checkoutUrl;
             }
           } else {
             setError(
@@ -156,9 +156,7 @@ export default function PaymentCard({
             setSuccess("تم إنشاء رابط الدفع عبر إمكان بنجاح");
             console.log(response.data.data.data.paymentURL);
             if (response.data.data.data.paymentURL) {
-              window.open(response.data.data.data.paymentURL, "_blank");
-            } else if (response.data.data.data.paymentURL) {
-              window.open(response.data.data.data.paymentURL, "_blank");
+              window.location.href = response.data.data.data.paymentURL;
             }
           } else {
             // Handle Emkan specific error structure
