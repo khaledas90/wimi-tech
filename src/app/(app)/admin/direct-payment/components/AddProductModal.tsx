@@ -81,8 +81,76 @@ const AddProductModal = ({
     setProductFormData((prev) => ({ ...prev, ...updatedData }));
   };
 
+  // Helper function to get storage (cookie or localStorage fallback for Safari)
+  const getStorageData = (): string | null => {
+    try {
+      // Try cookie first
+      const cookieData = Cookies.get("direct_payment_products");
+      if (cookieData) return cookieData;
+
+      // Fallback to localStorage (Safari-friendly)
+      if (typeof window !== "undefined" && window.localStorage) {
+        return localStorage.getItem("direct_payment_products");
+      }
+    } catch (error) {
+      console.error("Error reading storage:", error);
+    }
+    return null;
+  };
+
+  // Helper function to save storage (cookie and localStorage for Safari)
+  const saveStorageData = (data: string): boolean => {
+    try {
+      // Try to save to cookie
+      Cookies.set("direct_payment_products", data, {
+        expires: 30,
+        path: "/",
+        secure: window.location.protocol === "https:",
+        sameSite: "Lax",
+      });
+
+      // Also save to localStorage as Safari fallback
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("direct_payment_products", data);
+      }
+
+      // Verify at least one storage method worked
+      const verifyCookie = Cookies.get("direct_payment_products");
+      const verifyLocalStorage =
+        typeof window !== "undefined" && window.localStorage
+          ? localStorage.getItem("direct_payment_products")
+          : null;
+
+      return !!(verifyCookie || verifyLocalStorage);
+    } catch (error) {
+      console.error("Error saving storage:", error);
+      // Try localStorage only as last resort
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("direct_payment_products", data);
+          return true;
+        }
+      } catch (localStorageError) {
+        console.error("LocalStorage also failed:", localStorageError);
+      }
+      return false;
+    }
+  };
+
   const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (
+      !productFormData.title ||
+      !productFormData.description ||
+      !productFormData.price ||
+      !productFormData.quantity
+    ) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+
     setAddingProduct(true);
 
     try {
@@ -95,22 +163,35 @@ const AddProductModal = ({
         phoneNumber: productFormData.phoneNumber || phoneNumber,
       };
 
-      const existingProductsJson = Cookies.get("direct_payment_products");
+      // Get existing products from storage (cookie or localStorage)
+      const existingProductsJson = getStorageData();
+      let existingProducts: any[] = [];
 
-      const existingProducts = existingProductsJson
-        ? JSON.parse(existingProductsJson)
-        : [];
+      if (existingProductsJson) {
+        try {
+          existingProducts = JSON.parse(existingProductsJson);
+          if (!Array.isArray(existingProducts)) {
+            console.warn(
+              "Storage data is not an array, resetting to empty array"
+            );
+            existingProducts = [];
+          }
+        } catch (parseError) {
+          console.error("Error parsing existing products:", parseError);
+          existingProducts = [];
+        }
+      }
 
       const updatedProducts = [...existingProducts, newProduct];
+      const dataString = JSON.stringify(updatedProducts);
 
-      Cookies.set("direct_payment_products", JSON.stringify(updatedProducts), {
-        expires: 30,
-        path: "/",
-        secure: false,
-        sameSite: "None",
-      });
-
-      const verifyCookie = Cookies.get("direct_payment_products");
+      // Save to storage (cookie and localStorage)
+      const saved = saveStorageData(dataString);
+      if (!saved) {
+        setAddingProduct(false);
+        toast.error("فشل في حفظ المنتج. يرجى المحاولة مرة أخرى");
+        return;
+      }
 
       toast.success("تم إضافة المنتج بنجاح 🎉");
       onProductAdded();

@@ -38,20 +38,90 @@ const OrdersTable = ({
 
   const token = Cookies.get("token_admin");
 
-  // Debug function to check cookie
+  // Helper function to get storage (cookie or localStorage fallback for Safari)
+  const getStorageData = (): string | null => {
+    try {
+      // Try cookie first
+      const cookieData = Cookies.get("direct_payment_products");
+      if (cookieData) return cookieData;
+
+      // Fallback to localStorage (Safari-friendly)
+      if (typeof window !== "undefined" && window.localStorage) {
+        return localStorage.getItem("direct_payment_products");
+      }
+    } catch (error) {
+      console.error("Error reading storage:", error);
+    }
+    return null;
+  };
+
+  // Helper function to save storage (cookie and localStorage for Safari)
+  const saveStorageData = (data: string): boolean => {
+    try {
+      // Try to save to cookie
+      Cookies.set("direct_payment_products", data, {
+        expires: 30,
+        path: "/",
+        secure: window.location.protocol === "https:",
+        sameSite: "Lax",
+      });
+
+      // Also save to localStorage as Safari fallback
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("direct_payment_products", data);
+      }
+
+      // Verify at least one storage method worked
+      const verifyCookie = Cookies.get("direct_payment_products");
+      const verifyLocalStorage =
+        typeof window !== "undefined" && window.localStorage
+          ? localStorage.getItem("direct_payment_products")
+          : null;
+
+      return !!(verifyCookie || verifyLocalStorage);
+    } catch (error) {
+      console.error("Error saving storage:", error);
+      // Try localStorage only as last resort
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("direct_payment_products", data);
+          return true;
+        }
+      } catch (localStorageError) {
+        console.error("LocalStorage also failed:", localStorageError);
+      }
+      return false;
+    }
+  };
+
+  // Debug function to check storage
   const verifyCookie = () => {
     const cookieData = Cookies.get("direct_payment_products");
-    console.log("=== COOKIE VERIFICATION ===");
-    console.log("Raw cookie data:", cookieData);
+    const localStorageData =
+      typeof window !== "undefined" && window.localStorage
+        ? localStorage.getItem("direct_payment_products")
+        : null;
+
+    console.log("=== STORAGE VERIFICATION ===");
+    console.log("Cookie data:", cookieData);
+    console.log("LocalStorage data:", localStorageData);
 
     if (cookieData) {
       try {
         const parsedData = JSON.parse(cookieData);
+        console.log("Parsed cookie data:", parsedData);
       } catch (error) {
         console.error("Error parsing cookie:", error);
       }
+    } else if (localStorageData) {
+      try {
+        const parsedData = JSON.parse(localStorageData);
+        console.log("Parsed localStorage data:", parsedData);
+      } catch (error) {
+        console.error("Error parsing localStorage:", error);
+      }
     } else {
-      console.log("No cookie data found");
+      console.log("No storage data found");
     }
     console.log("=== END VERIFICATION ===");
   };
@@ -60,14 +130,34 @@ const OrdersTable = ({
     if (phoneNumber) {
       verifyCookie();
 
-      const cookieData = Cookies.get("direct_payment_products");
-      const Allorders = cookieData ? JSON.parse(cookieData) : [];
+      try {
+        // Get from storage (cookie or localStorage)
+        const storageData = getStorageData();
+        if (!storageData) {
+          setOrders([]);
+          return;
+        }
 
-      const filteredOrders = Allorders.filter(
-        (order: Order) => order.phoneNumber === phoneNumber
-      );
+        const Allorders = JSON.parse(storageData);
 
-      setOrders(filteredOrders);
+        if (!Array.isArray(Allorders)) {
+          console.error("Storage data is not an array:", Allorders);
+          setOrders([]);
+          return;
+        }
+
+        const filteredOrders = Allorders.filter(
+          (order: Order) => order.phoneNumber === phoneNumber
+        );
+
+        setOrders(filteredOrders);
+      } catch (error) {
+        console.error("Error parsing storage data:", error);
+        toast.error("حدث خطأ في قراءة بيانات الطلبات");
+        setOrders([]);
+      }
+    } else {
+      setOrders([]);
     }
   }, [phoneNumber, refreshTrigger]);
 
@@ -107,32 +197,49 @@ const OrdersTable = ({
   // };
 
   const deleteOrder = async (orderId: string) => {
-    // Get all orders from cookie
-    const cookieData = Cookies.get("direct_payment_products");
-    const allOrders = cookieData ? JSON.parse(cookieData) : [];
+    try {
+      // Get all orders from storage (cookie or localStorage)
+      const storageData = getStorageData();
+      if (!storageData) {
+        toast.error("لا توجد بيانات للطلبات");
+        return;
+      }
 
-    // Filter out the order to delete
-    const updatedAllOrders = allOrders.filter(
-      (order: Order) => order._id !== orderId
-    );
+      const allOrders = JSON.parse(storageData);
 
-    console.log("Updated orders after deletion:", updatedAllOrders);
+      if (!Array.isArray(allOrders)) {
+        console.error("Storage data is not an array:", allOrders);
+        toast.error("بيانات الطلبات غير صحيحة");
+        return;
+      }
 
-    // Update cookie
-    Cookies.set("direct_payment_products", JSON.stringify(updatedAllOrders), {
-      expires: 30,
-      path: "/",
-      secure: false,
-      sameSite: "None",
-    });
+      // Filter out the order to delete
+      const updatedAllOrders = allOrders.filter(
+        (order: Order) => order._id !== orderId
+      );
 
-    // Update local state
-    setOrders((prevOrders) =>
-      prevOrders.filter((order) => order._id !== orderId)
-    );
+      console.log("Updated orders after deletion:", updatedAllOrders);
 
-    toast.success("تم حذف الطلب بنجاح");
-    onOrderDeleted();
+      // Update storage (cookie and localStorage)
+      const dataString = JSON.stringify(updatedAllOrders);
+      const saved = saveStorageData(dataString);
+
+      if (!saved) {
+        toast.error("فشل في حفظ التغييرات");
+        return;
+      }
+
+      // Update local state
+      setOrders((prevOrders) =>
+        prevOrders.filter((order) => order._id !== orderId)
+      );
+
+      toast.success("تم حذف الطلب بنجاح");
+      onOrderDeleted();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("حدث خطأ أثناء حذف الطلب");
+    }
     // if (!token) {
     //   toast.error("يرجى تسجيل الدخول أولاً");
     //   return;
