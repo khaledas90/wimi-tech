@@ -43,8 +43,7 @@ export default function ProductDetailsPage() {
     };
     getProduct();
   }, []);
-
-  // ✅ Inject Tamara script and config
+ 
   useEffect(() => {
     const configScript = document.createElement("script");
     configScript.innerHTML = `
@@ -66,8 +65,7 @@ export default function ProductDetailsPage() {
       document.body.removeChild(tamaraScript);
     };
   }, []);
-
-  // ✅ Refresh Tamara widget if price changes
+ 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).TamaraWidgetV2) {
       (window as any).TamaraWidgetV2.refresh();
