@@ -77,6 +77,29 @@ export default function Favorite() {
   const urlcreate = `${BaseUrl}fatora/create-payment`;
   const token = Cookies.get("token");
 
+  // ✅ Inject Tamara script and config
+  useEffect(() => {
+    const configScript = document.createElement("script");
+    configScript.innerHTML = `
+        window.tamaraWidgetConfig = {
+          lang: "ar",
+          country: "SA",
+          publicKey: "dbfb085b-258c-4c4c-b9ff-1cb8501ca531"
+        };
+      `;
+    document.head.appendChild(configScript);
+
+    const tamaraScript = document.createElement("script");
+    tamaraScript.src = "https://cdn.tamara.co/widget-v2/tamara-widget.js";
+    tamaraScript.defer = true;
+    document.body.appendChild(tamaraScript);
+
+    return () => {
+      document.head.removeChild(configScript);
+      document.body.removeChild(tamaraScript);
+    };
+  }, []);
+
   useEffect(() => {
     const getCart = async () => {
       try {
@@ -511,15 +534,17 @@ export default function Favorite() {
                   </tbody>
                 </table>
 
-                <div className="mt-6 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleCompletePurchase}
-                    className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105"
-                  >
-                    <ShoppingCart size={20} />
-                    <span>اتمام الشراء</span>
-                  </button>
+                <div className="mt-6 space-y-4">
+                  <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleCompletePurchase}
+                      className="flex items-center gap-3 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transition duration-300 transform hover:scale-105"
+                    >
+                      <ShoppingCart size={20} />
+                      <span>اتمام الشراء</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -631,7 +656,32 @@ export default function Favorite() {
                 {allProducts.filter(
                   (p) => p.type === "order" && p.paymentState === "Pending"
                 ).length > 0 && (
-                  <div className="mt-6 flex justify-center">
+                  <div className="mt-6 flex flex-col  justify-center items-center gap-4">
+                    <div className="mt-4 bg-[#f5f0ff] rounded-xl px-4 py-3 flex items-center justify-between shadow-sm border border-purple-100">
+                      <div
+                        className="flex-1 text-right text-gray-700 text-sm sm:text-base leading-relaxed"
+                        dir="rtl"
+                      >
+                        <tamara-widget
+                          type="tamara-summary"
+                          amount={allProducts
+                            .filter(
+                              (p) =>
+                                p.type === "order" &&
+                                p.paymentState === "Pending"
+                            )
+                            .reduce(
+                              (acc, product) =>
+                                acc + product.price * (product.quantity ?? 1),
+                              0
+                            )
+                            .toString()}
+                          inline-type="2"
+                          inline-variant="text"
+                          config='{"theme":"light","badgePosition":"right","showExtraContent":"","hidePayInX":false}'
+                        ></tamara-widget>
+                      </div>
+                    </div>
                     <button
                       type="button"
                       onClick={handleBulkPayment}
