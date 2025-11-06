@@ -135,7 +135,6 @@ export default function UsersManagementPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
-        {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
