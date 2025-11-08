@@ -250,20 +250,37 @@ export default function ProductDetailsPage() {
               <h3 className="text-xl font-bold text-[#1e293b] mb-3">
                 👨‍💼 بيانات التاجر
               </h3>
-              <ul className="space-y-2 text-gray-700 text-base sm:text-lg">
-                <li>
-                  <span className="font-semibold text-gray-600">الاسم:</span>{" "}
-                  {details.traderId.firstName}
-                </li>
-                <li>
-                  <span className="font-semibold text-gray-600">البريد:</span>{" "}
-                  {details.traderId.email}
-                </li>
-                <li>
-                  <span className="font-semibold text-gray-600">الهاتف:</span>{" "}
-                  {details.traderId.phoneNumber}
-                </li>
-              </ul>
+              {details.traderId === null ? (
+                <ul className="space-y-2 text-gray-700 text-base sm:text-lg">
+                  <li>
+                    <span className="font-semibold text-gray-600">الاسم:</span>{" "}
+                    -----------------
+                  </li>
+                  <li>
+                    <span className="font-semibold text-gray-600">البريد:</span>{" "}
+                    -----------------
+                  </li>
+                  <li>
+                    <span className="font-semibold text-gray-600">الهاتف:</span>{" "}
+                    -----------------
+                  </li>
+                </ul>
+              ) : (
+                <ul className="space-y-2 text-gray-700 text-base sm:text-lg">
+                  <li>
+                    <span className="font-semibold text-gray-600">الاسم:</span>{" "}
+                    {details.traderId.firstName}
+                  </li>
+                  <li>
+                    <span className="font-semibold text-gray-600">البريد:</span>{" "}
+                    {details.traderId.email}
+                  </li>
+                  <li>
+                    <span className="font-semibold text-gray-600">الهاتف:</span>{" "}
+                    {details.traderId.phoneNumber}
+                  </li>
+                </ul>
+              )}
             </div>
             <div className="mt-4 bg-[#f5f0ff] rounded-xl px-4 py-3 flex items-center justify-between shadow-sm border border-purple-100">
               <div
