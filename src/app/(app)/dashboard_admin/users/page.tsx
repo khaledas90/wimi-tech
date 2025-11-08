@@ -29,8 +29,21 @@ export default function UsersManagementPage() {
     setLoading(true);
     try {
       const res = await axios.get(`${urlUsers}?page=${page}`);
+      // Sort users by createdAt in descending order (newest first)
+      const sortedUsers = (res.data.data.users || []).sort((a: any, b: any) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA; // Newest first (descending order)
+      });
+      console.log(
+        "Sorted users (newest first):",
+        sortedUsers.map((u: any) => ({
+          username: u.username,
+          createdAt: u.createdAt,
+        }))
+      );
       setData({
-        users: res.data.data.users,
+        users: sortedUsers,
         traders: [],
         pagination: {
           totalUserPages: res.data.data.pagination.totalUserPages,

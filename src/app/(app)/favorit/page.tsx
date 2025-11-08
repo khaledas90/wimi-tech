@@ -32,7 +32,15 @@ export default function Favorite() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setFavorite(res.data.data);
+        // Sort favorites by createdAt in descending order (newest first)
+        const sortedFavorites = (res.data.data || []).sort(
+          (a: main_screen_Product, b: main_screen_Product) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+          }
+        );
+        setFavorite(sortedFavorites);
       } catch (error) {
         console.log(error);
       }

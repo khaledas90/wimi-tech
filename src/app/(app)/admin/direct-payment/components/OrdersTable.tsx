@@ -150,7 +150,14 @@ const OrdersTable = ({
           (order: Order) => order.phoneNumber === phoneNumber
         );
 
-        setOrders(filteredOrders);
+        // Sort orders by createdAt in descending order (newest first)
+        const sortedOrders = filteredOrders.sort((a: Order, b: Order) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
+        setOrders(sortedOrders);
       } catch (error) {
         console.error("Error parsing storage data:", error);
         toast.error("حدث خطأ في قراءة بيانات الطلبات");

@@ -111,14 +111,22 @@ export default function HomePage() {
         });
 
         const products = res.data?.products || [];
+        // Sort products by createdAt in descending order (newest first)
+        const sortedProducts = products.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
         const pagination = res.data?.pagination || { totalPages: 0 };
 
         if (resetProducts) {
-          setProducts(products);
+          setProducts(sortedProducts);
         } else {
           setProducts((prev) => {
             const existingIds = new Set(prev.map((p) => p._id));
-            const filteredNew = products.filter((p) => !existingIds.has(p._id));
+            const filteredNew = sortedProducts.filter(
+              (p) => !existingIds.has(p._id)
+            );
             return [...prev, ...filteredNew];
           });
         }
@@ -134,14 +142,20 @@ export default function HomePage() {
           `${BaseUrl}main/main-screen?page=${page}&limit=10`
         );
         const newProducts = res.data?.products || [];
+        // Sort products by createdAt in descending order (newest first)
+        const sortedNewProducts = newProducts.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
         const pagination = res.data?.pagination || { totalPages: 0 };
 
         if (resetProducts) {
-          setProducts(newProducts);
+          setProducts(sortedNewProducts);
         } else {
           setProducts((prev) => {
             const existingIds = new Set(prev.map((p) => p._id));
-            const filteredNew = newProducts.filter(
+            const filteredNew = sortedNewProducts.filter(
               (p) => !existingIds.has(p._id)
             );
             return [...prev, ...filteredNew];

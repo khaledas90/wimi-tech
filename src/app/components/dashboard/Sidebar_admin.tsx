@@ -13,6 +13,7 @@ import {
   FileText,
   Wallet,
   Package,
+  ShoppingCart,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,8 +33,13 @@ const navItems = [
   },
   {
     href: "/dashboard_admin/requests",
-    label: "إدارة الطلبات",
+    label: "إدارة طلبات الاسترجاع",
     icon: FileText,
+  },
+  {
+    href: "/dashboard_admin/orders",
+    label: "إدارة الطلبات",
+    icon: ShoppingCart,
   },
   {
     href: "/dashboard_admin/wallets",
@@ -65,7 +71,7 @@ export default function Sidebar_admin() {
       <aside
         dir="rtl"
         className={`
-    fixed top-0 right-0 h-screen w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl   z-40 flex flex-col transition-transform duration-300 ease-in-out
+    fixed top-0 right-0 h-screen w-80 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl   z-40 flex flex-col transition-transform duration-300 ease-in-out
     ${isOpen ? "translate-x-0" : "translate-x-full"}
     lg:translate-x-0
     overflow-y-auto
@@ -87,7 +93,7 @@ export default function Sidebar_admin() {
                 key={href}
                 href={href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group
+                className={`flex items-center gap-4 px-4 py-2 rounded-xl transition-all duration-300 group
                   ${
                     isActive
                       ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg transform scale-105"
@@ -103,7 +109,7 @@ export default function Sidebar_admin() {
                       : "text-gray-400 group-hover:text-white"
                   } transition-colors duration-300`}
                 />
-                <span className="text-base font-medium">{label}</span>
+                <span className="text-[15px] font-medium">{label}</span>
                 {isActive && (
                   <div className="w-2 h-2 bg-white rounded-full ml-auto"></div>
                 )}

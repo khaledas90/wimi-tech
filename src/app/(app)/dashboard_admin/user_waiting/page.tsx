@@ -34,7 +34,15 @@ export default function WaitingListPage() {
         params: { page },
       });
 
-      setWaitingUsers(response.data.data.data || []);
+      // Sort waiting users by createdAt in descending order (newest first)
+      const sortedUsers = (response.data.data.data || []).sort(
+        (a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        }
+      );
+      setWaitingUsers(sortedUsers);
       setTotalPages(response.data.data.pagination?.totalPages || 1);
     } catch (error) {
       toast.error("فشل في تحميل المستخدمين");

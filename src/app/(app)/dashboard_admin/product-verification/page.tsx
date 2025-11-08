@@ -1,9 +1,9 @@
 "use client";
 import { BaseUrl } from "@/app/components/Baseurl";
-import { 
-  ProductForVerification, 
-  ProductVerificationResponse, 
-  UpdateVerificationRequest 
+import {
+  ProductForVerification,
+  ProductVerificationResponse,
+  UpdateVerificationRequest,
 } from "@/app/lib/type";
 import { ApiCall } from "@/app/utils/ApiCall";
 import React, { useEffect, useState } from "react";
@@ -45,15 +45,23 @@ export default function ProductVerificationPage() {
         "GET",
         null,
         {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json",
-          "Authorization": token,
+          Authorization: token,
         }
       );
 
       if (response.data.success) {
-        setProducts(response.data.data);
-        setTotalProducts(response.data.data.length);
+        // Sort products by createdAt in descending order (newest first)
+        const sortedProducts = (response.data.data || []).sort(
+          (a: ProductForVerification, b: ProductForVerification) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+          }
+        );
+        setProducts(sortedProducts);
+        setTotalProducts(sortedProducts.length);
       } else {
         setError(response.data.message || "فشل في جلب المنتجات");
       }
@@ -71,15 +79,15 @@ export default function ProductVerificationPage() {
     try {
       const token = getAuthToken();
       const requestData: UpdateVerificationRequest = { productId };
-      
+
       const response = await ApiCall(
         `${BaseUrl}admin/update-verify`,
         "PATCH",
         requestData,
         {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json",
-          "Authorization": token,
+          Authorization: token,
         }
       );
 
@@ -107,20 +115,41 @@ export default function ProductVerificationPage() {
         <table className="w-full">
           <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
             <tr>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">الصورة</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">اسم المنتج</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">السعر</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">التصنيف</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">الكمية</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">التاجر</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">تاريخ الإضافة</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">الحالة</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">الإجراءات</th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                الصورة
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                اسم المنتج
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                السعر
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                التصنيف
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                الكمية
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                التاجر
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                تاريخ الإضافة
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                الحالة
+              </th>
+              <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                الإجراءات
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {products.map((product) => (
-              <tr key={product._id} className="hover:bg-gray-50 transition-colors duration-200">
+              <tr
+                key={product._id}
+                className="hover:bg-gray-50 transition-colors duration-200"
+              >
                 {/* Product Image */}
                 <td className="px-6 py-4">
                   <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
@@ -173,16 +202,24 @@ export default function ProductVerificationPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <Package className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-900">{product.stockQuantity}</span>
+                    <span className="text-sm text-gray-900">
+                      {product.stockQuantity}
+                    </span>
                   </div>
                 </td>
 
                 {/* Trader Info */}
                 <td className="px-6 py-4">
                   <div className="text-sm">
-                    <p className="font-medium text-gray-900">{product.traderId.email}</p>
-                    <p className="text-gray-500">{product.traderId.phoneNumber}</p>
-                    <p className="text-xs text-gray-400">UID: {product.traderId.UID}</p>
+                    <p className="font-medium text-gray-900">
+                      {product.traderId.email}
+                    </p>
+                    <p className="text-gray-500">
+                      {product.traderId.phoneNumber}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      UID: {product.traderId.UID}
+                    </p>
                   </div>
                 </td>
 

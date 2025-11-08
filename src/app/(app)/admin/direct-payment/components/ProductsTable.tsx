@@ -26,7 +26,13 @@ const ProductsTable = ({ onProductDeleted }: ProductsTableProps) => {
     try {
       const productsJson = Cookies.get("direct_payment_products");
       const products = productsJson ? JSON.parse(productsJson) : [];
-      setProducts(products);
+      // Sort products by createdAt in descending order (newest first)
+      const sortedProducts = products.sort((a: Product, b: Product) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+      setProducts(sortedProducts);
     } catch (error: any) {
       console.error(error);
       toast.error("خطأ في جلب المنتجات");

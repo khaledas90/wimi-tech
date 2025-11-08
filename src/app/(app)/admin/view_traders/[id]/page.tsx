@@ -30,7 +30,15 @@ export default function Traders() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTrader(res.data.data.trader);
-        setOrders(res.data.data.orders);
+        // Sort orders by orderDate in descending order (newest first)
+        const sortedOrders = (res.data.data.orders || []).sort(
+          (a: Ordershoping, b: Ordershoping) => {
+            return (
+              new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+            );
+          }
+        );
+        setOrders(sortedOrders);
       } catch (error) {
         console.error("فشل في تحميل البيانات:", error);
       }
@@ -63,7 +71,7 @@ export default function Traders() {
                 <Phone className="w-5 h-5 text-purple-500" />
                 {trader.phoneNumber}
               </p>
-              
+
               <p className="flex items-center gap-2 text-black">
                 <ReceiptText className="w-5 h-5 text-purple-500" />
                 ID: {trader._id}
@@ -81,34 +89,48 @@ export default function Traders() {
                 <div className="grid sm:grid-cols-2 gap-6">
                   {orders.map((order) => (
                     <Link
-                    href={`/admin/update/${order.productId}`}
+                      href={`/admin/update/${order.productId}`}
                       key={order._id}
                       className="bg-white border border-purple-200 rounded-xl p-5 shadow hover:shadow-lg transition"
                     >
                       <p className="text-sm mb-2 text-gray-500">
-                        <span className="font-semibold text-purple-700">رقم الطلب:</span>{" "}
+                        <span className="font-semibold text-purple-700">
+                          رقم الطلب:
+                        </span>{" "}
                         {order._id}
                       </p>
                       <p className="text-sm text-gray-500">
-                        <span className="font-semibold text-purple-700">المنتج:</span>{" "}
+                        <span className="font-semibold text-purple-700">
+                          المنتج:
+                        </span>{" "}
                         {typeof order.productId === "string"
                           ? order.productId
                           : order.productId?._id || "غير متوفر"}
                       </p>
                       <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-purple-700">الكمية:</span>{" "}
+                        <span className="font-semibold text-purple-700">
+                          الكمية:
+                        </span>{" "}
                         {order.quantity}
                       </p>
                       <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-purple-700">السعر:</span>{" "}
-                        <span className="text-gray-700">{order.totalPrice} جنيه</span>
+                        <span className="font-semibold text-purple-700">
+                          السعر:
+                        </span>{" "}
+                        <span className="text-gray-700">
+                          {order.totalPrice} جنيه
+                        </span>
                       </p>
                       <p className="text-sm text-yellow-300">
-                        <span className="font-semibold text-purple-700">الحالة:</span>{" "}
+                        <span className="font-semibold text-purple-700">
+                          الحالة:
+                        </span>{" "}
                         {order.status}
                       </p>
                       <p className="text-sm text-green-600">
-                        <span className="font-semibold text-purple-700">الدفع:</span>{" "}
+                        <span className="font-semibold text-purple-700">
+                          الدفع:
+                        </span>{" "}
                         <BadgeDollarSign className="inline w-4 h-4 text-green-600" />{" "}
                         {order.paymentState}
                       </p>
@@ -126,7 +148,9 @@ export default function Traders() {
             </div>
           </div>
         ) : (
-          <p className="text-center text-lg text-gray-700 mt-10">جاري تحميل البيانات...</p>
+          <p className="text-center text-lg text-gray-700 mt-10">
+            جاري تحميل البيانات...
+          </p>
         )}
       </div>
     </Container>

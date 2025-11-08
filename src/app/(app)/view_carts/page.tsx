@@ -126,7 +126,15 @@ export default function Favorite() {
           })
         );
 
-        const ordersWithType: ProductWithType[] = res.data.data.orders
+        const sortedOrders = (res.data.data.orders || []).sort(
+          (a: Ordershoping, b: Ordershoping) => {
+            const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+            const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+            return dateB - dateA;
+          }
+        );
+
+        const ordersWithType: ProductWithType[] = sortedOrders
           .filter((order) => order.products && order.products.length > 0)
           .flatMap((order) =>
             order.products.map((product) => ({

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { BaseUrl } from '@/app/components/Baseurl';
-import Container from '@/app/components/Container';
-import { main_screen_Product, Pagination } from '@/app/lib/type';
-import debounce from 'lodash.debounce';
-import axios from 'axios';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import SmartNavbar from '@/app/components/ui/Navbar'; // تأكد إن عندك كمبوننت النافبار
+import { BaseUrl } from "@/app/components/Baseurl";
+import Container from "@/app/components/Container";
+import { main_screen_Product, Pagination } from "@/app/lib/type";
+import debounce from "lodash.debounce";
+import axios from "axios";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import SmartNavbar from "@/app/components/ui/Navbar"; // تأكد إن عندك كمبوننت النافبار
 
 export default function SearchPagination() {
   const searchEndpoint = `${BaseUrl}main/search`;
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState<main_screen_Product[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -27,21 +27,29 @@ export default function SearchPagination() {
         { text: textValue, page: pageNumber },
         {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
         }
       );
 
       if (response.data.success) {
+        const fetchedProducts = response.data.data.products || [];
+        // Sort products by createdAt in descending order (newest first)
+        const sortedProducts = fetchedProducts.sort((a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+
         if (pageNumber === 1) {
-          setProducts(response.data.data.products || []);
+          setProducts(sortedProducts);
         } else {
-          setProducts((prev) => [...prev, ...(response.data.data.products || [])]);
+          setProducts((prev) => [...prev, ...sortedProducts]);
         }
         setPagination(response.data.data.pagination);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
     setLoading(false);
   };
@@ -66,7 +74,11 @@ export default function SearchPagination() {
     const observer = new IntersectionObserver(
       (entries) => {
         const first = entries[0];
-        if (first.isIntersecting && pagination && page < pagination.totalPages) {
+        if (
+          first.isIntersecting &&
+          pagination &&
+          page < pagination.totalPages
+        ) {
           setPage((prev) => prev + 1);
         }
       },
@@ -117,11 +129,15 @@ export default function SearchPagination() {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-gray-800">{item.title}</h3>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {item.title}
+                  </h3>
                   <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                     {item.description}
                   </p>
-                  <p className="mt-2 text-purple-700 font-semibold">{item.price} ريال سعودى</p>
+                  <p className="mt-2 text-purple-700 font-semibold">
+                    {item.price} ريال سعودى
+                  </p>
                 </div>
               </motion.div>
             ))}

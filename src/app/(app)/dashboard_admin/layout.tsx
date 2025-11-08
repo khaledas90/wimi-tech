@@ -22,7 +22,7 @@ export default function RootLayout({
   return (
     <div className={`${tajawal.variable} font-tajawal min-h-screen`}>
       <Sidebar_admin />
-      <div className="lg:mr-72 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
+      <div className="lg:mr-80 bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
         <Topbar_admin />
         <main className="pt-16 w-full">{children}</main>
       </div>

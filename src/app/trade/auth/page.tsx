@@ -88,12 +88,11 @@ export default function AuthTrader() {
     },
     {
       name: "nameOfbussinessActor",
-      label: "اسم ممثل الكيان",
+      label: "اسم البائع",
       type: "text",
       requierd: true,
     },
 
-    // Commercial Registration Section
     {
       name: "nationalId",
       label: "رقم السجل التجاري",

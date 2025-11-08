@@ -54,7 +54,16 @@ export default function Admin() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.status === 200) {
-          setOrders(res.data.data.orders);
+          // Sort orders by orderDate in descending order (newest first)
+          const sortedOrders = (res.data.data.orders || []).sort(
+            (a: Orderreport, b: Orderreport) => {
+              return (
+                new Date(b.orderDate).getTime() -
+                new Date(a.orderDate).getTime()
+              );
+            }
+          );
+          setOrders(sortedOrders);
           toast.success("تم تحميل الطلبات بنجاح");
         }
       } catch (err) {
@@ -74,7 +83,7 @@ export default function Admin() {
         {
           orderId: orderId,
           type: "1",
-          amount: amount
+          amount: amount,
         },
         {
           headers: {
@@ -98,14 +107,11 @@ export default function Admin() {
   const handleWalletRequest = async () => {
     setWalletLoading(true);
     try {
-      const res = await axios.get(
-        `${BaseUrl}traders/get-wallet`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`${BaseUrl}traders/get-wallet`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (res.status === 200) {
         setWalletData(res.data);
         setWalletModalOpen(true);
@@ -289,9 +295,7 @@ export default function Admin() {
                       جاري التحميل...
                     </>
                   ) : (
-                    <>
-                      💰 عرض المحفظة
-                    </>
+                    <>💰 عرض المحفظة</>
                   )}
                 </button>
                 <button
@@ -495,7 +499,9 @@ export default function Admin() {
                   <div className="space-y-3">
                     {"wallet" in (walletData.data || {}) ? (
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-700 font-medium">المحفظة</span>
+                        <span className="text-gray-700 font-medium">
+                          المحفظة
+                        </span>
                         <span className="text-green-600 font-semibold">
                           {walletData.data.wallet} ريال
                         </span>
@@ -529,12 +535,12 @@ export default function Admin() {
                     تأكيد طلب الاسترجاع
                   </h4>
                   {(() => {
-                    const order = orders.find(o => o._id === refundOrderId);
+                    const order = orders.find((o) => o._id === refundOrderId);
                     return order ? (
                       <>
-                        
                         <p className="text-gray-600 mb-2">
-                          العميل: <span className="font-medium">
+                          العميل:{" "}
+                          <span className="font-medium">
                             {order.userId
                               ? `${order.userId.firstName || ""} ${
                                   order.userId.lastName || ""
@@ -545,7 +551,8 @@ export default function Admin() {
                           </span>
                         </p>
                         <p className="text-gray-600 mb-2">
-                          المنتج: <span className="font-medium">
+                          المنتج:{" "}
+                          <span className="font-medium">
                             {typeof order.productId === "object" &&
                             order.productId?.title
                               ? order.productId.title
@@ -553,7 +560,10 @@ export default function Admin() {
                           </span>
                         </p>
                         <p className="text-gray-600 mb-4">
-                          المبلغ: <span className="font-medium text-green-600">{order.totalPrice} EGP</span>
+                          المبلغ:{" "}
+                          <span className="font-medium text-green-600">
+                            {order.totalPrice} EGP
+                          </span>
                         </p>
                         <p className="text-gray-600 mb-4">
                           هل أنت متأكد من إرسال طلب استرجاع لهذا الطلب؟
@@ -573,7 +583,9 @@ export default function Admin() {
                     </button>
                     <button
                       onClick={() => {
-                        const order = orders.find(o => o._id === refundOrderId);
+                        const order = orders.find(
+                          (o) => o._id === refundOrderId
+                        );
                         if (order) {
                           handleRefundRequest(refundOrderId, order.totalPrice);
                         }

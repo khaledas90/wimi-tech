@@ -39,10 +39,9 @@ export default function Topbar_admin() {
         flex items-center justify-between
         px-4 sm:px-6 lg:px-6
         backdrop-blur-md border-b border-gray-200
-        lg:right-64
+        lg:right-80
       "
     >
-      {/* الشعار والترحيب */}
       <div className="flex items-center gap-3">
         <Link href={"/"}>
           <Image

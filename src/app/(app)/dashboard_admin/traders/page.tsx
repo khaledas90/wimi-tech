@@ -59,9 +59,24 @@ export default function TradersManagementPage() {
     setLoading(true);
     try {
       const res = await axios.get(`${urlTraders}?page=${page}`);
+      // Sort traders by createdAt in descending order (newest first)
+      const sortedTraders = (res.data.data.traders || []).sort(
+        (a: any, b: any) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA; // Newest first (descending order)
+        }
+      );
+      console.log(
+        "Sorted traders (newest first):",
+        sortedTraders.map((t: any) => ({
+          name: `${t.firstName} ${t.lastName}`,
+          createdAt: t.createdAt,
+        }))
+      );
       setData({
         users: [],
-        traders: res.data.data.traders,
+        traders: sortedTraders,
         pagination: {
           totalUserPages: 0,
           totalTraderPages: res.data.data.pagination.totalTraderPages,
