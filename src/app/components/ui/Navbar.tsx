@@ -300,7 +300,7 @@ const SmartNavbar = () => {
                     href="/trade/auth"
                     className="bg-[#f0a136] text-white py-2 rounded-full hover:bg-[#e08b10] transition"
                   >
-                    التسجيل كتاجر
+                    تسجيل الشركات والمؤسسات
                   </Link>
                   <button
                     onClick={() => setShowModal(false)}
