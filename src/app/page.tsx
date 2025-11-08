@@ -42,6 +42,7 @@ export default function HomePage() {
   const urlfav = `${BaseUrl}users/favorites`;
   const token = Cookies.get("token");
   const { incrementFavoritesCount, decrementFavoritesCount } = useFavorites();
+  
 
   const productSliderItems: ProductSliderItem[] = [
     {
@@ -93,31 +94,45 @@ export default function HomePage() {
     }
   }, []);
 
-  const fetchProducts = async (isFilter = false, resetProducts = false) => {
+  const fetchProducts = async (isFilter = false, resetProducts = false, category?: string) => {
     if (loadingMore || (!hasMore && !isFilter)) return;
     setLoadingMore(true);
 
     try {
       let res: ApiResponse<gethome>;
+      
+      // Use the passed category or fall back to selectedCategory state
+      const categoryToUse = category || selectedCategory;
 
       if (
         isFilter &&
-        selectedCategory &&
-        selectedCategory !== "الكل" &&
-        selectedCategory !== ""
+        categoryToUse &&
+        categoryToUse !== "الكل" &&
+        categoryToUse !== ""
       ) {
-        res = await CallApi("post", `${BaseUrl}main/filter`, {
-          category: selectedCategory,
-        });
+        // Add cache-busting timestamp to ensure fresh API call
+        const timestamp = Date.now();
+        res = await CallApi(
+          "post",
+          `${BaseUrl}main/filter?t=${timestamp}`,
+          {
+            category: categoryToUse,
+          },
+          {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          }
+        );
 
-        const products = res.data?.products || [];
+        // Filter endpoint returns data as an array directly
+        const products = Array.isArray(res.data) ? res.data : [];
         // Sort products by createdAt in descending order (newest first)
         const sortedProducts = products.sort((a: any, b: any) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
-        const pagination = res.data?.pagination || { totalPages: 0 };
 
         if (resetProducts) {
           setProducts(sortedProducts);
@@ -133,15 +148,25 @@ export default function HomePage() {
 
         setFilterPage((prev) => prev + 1);
 
-        if (products.length === 0 || filterPage >= pagination.totalPages) {
+        // Filter endpoint doesn't return pagination, so check if no more products
+        if (products.length === 0) {
           setFilterHasMore(false);
         }
       } else {
+        // Add cache-busting timestamp to ensure fresh API call
+        const timestamp = Date.now();
         res = await CallApi(
           "get",
-          `${BaseUrl}main/main-screen?page=${page}&limit=10`
+          `${BaseUrl}main/main-screen?page=${page}&limit=10&t=${timestamp}`,
+          {},
+          {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          }
         );
-        const newProducts = res.data?.products || [];
+        // Main-screen endpoint returns data.products and data.pagination
+        const newProducts = Array.isArray(res.data?.products) ? res.data.products : [];
         // Sort products by createdAt in descending order (newest first)
         const sortedNewProducts = newProducts.sort((a: any, b: any) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -177,24 +202,26 @@ export default function HomePage() {
   };
 
   const handleCategoryFilter = async (category: string) => {
+    // Clear all cached data first
+    setProducts([]);
     setSelectedCategory(category);
     setIsFiltering(true);
 
-    // Reset pagination states
+    // Reset pagination states completely
     if (category === "الكل") {
       setPage(1);
       setHasMore(true);
       setFilterPage(1);
       setFilterHasMore(true);
-      // Use main-screen endpoint for "الكل"
+      // Use main-screen endpoint for "الكل" - force fresh call
       await fetchProducts(false, true);
     } else {
       setFilterPage(1);
       setFilterHasMore(true);
       setPage(1);
       setHasMore(true);
-      // Use filter endpoint for specific categories
-      await fetchProducts(true, true);
+      // Use filter endpoint for specific categories - pass category directly
+      await fetchProducts(true, true, category);
     }
 
     setIsFiltering(false);
