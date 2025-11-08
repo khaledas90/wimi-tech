@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { CheckCircle, CreditCard } from "lucide-react";
 
@@ -31,6 +31,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const token = Cookies.get("token_admin");
   const phone = Cookies.get("phone");
   const router = useRouter();
@@ -75,6 +76,32 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     const tenValue = calculateTenValue();
     return mainPrice + addedValue + tenValue;
   };
+
+  // Effect to handle payment URL opening - Safari-friendly approach
+  useEffect(() => {
+    if (paymentUrl) {
+      // Create a temporary anchor element and click it
+      // This approach works better with Safari's popup blocker
+      const link = document.createElement("a");
+      link.href = paymentUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      
+      // Append to body, click, then remove
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up after a brief delay
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+      }, 100);
+      
+      // Reset payment URL after opening
+      setPaymentUrl(null);
+    }
+  }, [paymentUrl]);
 
   
   // console.log(calculateMainPrice());   // 4304.347826086957
@@ -124,9 +151,8 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
 
           if (response.data.success) {
             console.log(response.data.result);
-            setSuccess("تم إنشاء  بنجاح");
             if (response.data.data?.result?.checkout_url) {
-              window.open(response.data.data.result.checkout_url, "_blank");
+              setPaymentUrl(response.data.data.result.checkout_url);
               setSuccess("تم إنشاء رابط الدفع بنجاح");
             } else {
               setError("لم يتم العثور على رابط الدفع");
@@ -153,10 +179,11 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           );
 
           if (response.data.success) {
-            setSuccess("تم إنشاء رابط الدفع عبر تمارا بنجاح");
-
             if (response.data?.data.checkoutUrl) {
-              window.open(response.data.data.checkoutUrl, "_blank");
+              setPaymentUrl(response.data.data.checkoutUrl);
+              setSuccess("تم إنشاء رابط الدفع عبر تمارا بنجاح");
+            } else {
+              setError("لم يتم العثور على رابط الدفع");
             }
           } else {
             setError(
@@ -182,12 +209,12 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           );
 
           if (response.data.success) {
-            setSuccess("تم إنشاء رابط الدفع عبر إمكان بنجاح");
             console.log(response.data.data.data.paymentURL);
             if (response.data.data.data.paymentURL) {
-              window.open(response.data.data.data.paymentURL, "_blank");
-            } else if (response.data.data.data.paymentURL) {
-              window.open(response.data.data.data.paymentURL, "_blank");
+              setPaymentUrl(response.data.data.data.paymentURL);
+              setSuccess("تم إنشاء رابط الدفع عبر إمكان بنجاح");
+            } else {
+              setError("لم يتم العثور على رابط الدفع");
             }
           } else {
             // Handle Emkan specific error structure
