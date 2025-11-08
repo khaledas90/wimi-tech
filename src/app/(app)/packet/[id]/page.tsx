@@ -15,6 +15,10 @@ import Image from "next/image";
 import { CallApi } from "@/app/lib/utilits";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+interface reeoeAdd {
+  success: boolean;
+  message: string;
+}
 
 export default function ProductDetailsPage() {
   const pathname = usePathname();
@@ -31,7 +35,6 @@ export default function ProductDetailsPage() {
     totalPrice: 0,
   });
 
-  // ✅ Fetch product details
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -43,7 +46,7 @@ export default function ProductDetailsPage() {
     };
     getProduct();
   }, []);
- 
+
   useEffect(() => {
     const configScript = document.createElement("script");
     configScript.innerHTML = `
@@ -65,7 +68,7 @@ export default function ProductDetailsPage() {
       document.body.removeChild(tamaraScript);
     };
   }, []);
- 
+
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).TamaraWidgetV2) {
       (window as any).TamaraWidgetV2.refresh();
@@ -87,6 +90,10 @@ export default function ProductDetailsPage() {
   };
 
   const handleSubmit = async (productId: string) => {
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       if (order.quantity >= 1) {
         order.totalPrice = order.quantity * details.price;
@@ -100,9 +107,32 @@ export default function ProductDetailsPage() {
       );
       console.log(res, order);
       toast.success("تم اضافه المنتج الى السله");
-    } catch {
-      setShowLoginModal(true);
-      return;
+    } catch (error: reeoeAdd | any) {
+      console.error(error);
+
+      let errorMessage = "حدث خطأ أثناء إضافة المنتج إلى السلة. حاول مرة أخرى.";
+
+      if (error?.message) {
+        const errorStr = error.message;
+        const jsonMatch = errorStr.match(/\{.*\}/);
+
+        if (jsonMatch) {
+          try {
+            const errorData = JSON.parse(jsonMatch[0]);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (parseError) {
+            errorMessage = errorStr;
+          }
+        } else {
+          errorMessage = errorStr;
+        }
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      toast.error(errorMessage);
     }
   };
 

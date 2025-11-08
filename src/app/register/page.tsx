@@ -47,7 +47,11 @@ export default function RegisterPage() {
       toast.success("تم تسجيل حسابك بنجاح 🎉");
       // Send OTP via unified endpoint, then open verification modal
       try {
-        await Postresponse(`${BaseUrl}users/verify-otp`, { phoneNumber: formData.phoneNumber }, { api_key: ApiKey });
+        await Postresponse(
+          `${BaseUrl}users/verify-otp`,
+          { phoneNumber: formData.phoneNumber },
+          { api_key: ApiKey }
+        );
       } catch (err) {
         // Even if sending OTP fails, allow user to try resend from modal
         console.error("Failed to send OTP after signup:", err);
@@ -113,7 +117,7 @@ export default function RegisterPage() {
 
             <p className="text-center text-sm text-gray-700">
               لديك حساب بالفعل؟{" "}
-              <Link href="/login">
+              <Link href="/auth">
                 <span className="bg-text-gradient bg-clip-text text-transparent font-semibold underline cursor-pointer text-white transition">
                   تسجيل الدخول
                 </span>

@@ -307,10 +307,8 @@ export default function AuthTrader() {
       if (res.status === 200 || res.status === 201) {
         toast.success("تم إنشاء الحساب بنجاح 🎉");
 
-        // Store only essential registration data
         Cookies.set("phone", registerData.phoneNumber);
 
-        // Send OTP to trader and open verification modal
         try {
           await axios.post(
             `${BaseUrl}traders/verify-otp`,

@@ -17,7 +17,7 @@ export const LoginRequiredModal = ({ show }: { show: boolean }) => {
           لا يمكنك الوصول إلى هذه العملية بدون تسجيل الدخول.
         </p>
         <Link
-          href="/login"
+          href="/auth"
           className="inline-block bg-btn-color text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition text-sm md:text-base"
         >
           تسجيل الدخول الآن
