@@ -14,6 +14,7 @@ import {
   Wallet,
   Package,
   ShoppingCart,
+  Link as LinkIcon,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -40,6 +41,11 @@ const navItems = [
     href: "/dashboard_admin/orders",
     label: "إدارة الطلبات",
     icon: ShoppingCart,
+  },
+  {
+    href: "/dashboard_admin/direct-orders",
+    label: "الطلبات المباشرة",
+    icon: LinkIcon,
   },
   {
     href: "/dashboard_admin/wallets",

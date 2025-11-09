@@ -284,7 +284,7 @@ export default function OrderDetailsPage() {
 
                   <div className="flex justify-between items-center py-2">
                     <span className="text-lg font-bold text-gray-800">
-                      ضريبة القيمة المضافة (15%):
+                      ضريبة القيمة المضافة:
                     </span>
                     <span className="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg shadow-sm">
                       +{calculateAddedValue().toFixed(2)} ر.س
@@ -293,7 +293,7 @@ export default function OrderDetailsPage() {
 
                   <div className="flex justify-between items-center py-2">
                     <span className="text-lg font-bold text-gray-800">
-                      رسوم ادارية (10%):
+                      رسوم ادارية:
                     </span>
                     <span className="text-xl font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg shadow-sm">
                       +{calculateTenValue().toFixed(2)} ر.س

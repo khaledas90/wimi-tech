@@ -8,8 +8,9 @@ import Cookies from "js-cookie";
 import axios from "axios";
 import Image from "next/image";
 import EmkanIcon from "../../../assets/emkan.png";
-import FatoraIcon from "../../../assets/fatora.jpg";
 import TamaraIcon from "../../../assets/tamara.png";
+import MadaIcon from "../../../assets/Mada.png";
+import ApplePayIcon from "../../../assets/ApplePay.svg";
 
 interface PaymentCardProps {
   orderData?: {
@@ -35,7 +36,7 @@ export default function PaymentCard({
   paymentDetails,
 }: PaymentCardProps) {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "tamara" | "invoice" | "emkan" | null
+    "tamara" | "mada" | "applepay" | "emkan" | null
   >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,33 +57,7 @@ export default function PaymentCard({
     );
   };
 
-  // Effect to handle payment URL opening - Safari-friendly approach
-  useEffect(() => {
-    if (paymentUrl) {
-      // Create a temporary anchor element and click it
-      // This approach works better with Safari's popup blocker
-      const link = document.createElement("a");
-      link.href = paymentUrl;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      
-      // Append to body, click, then remove
-      document.body.appendChild(link);
-      link.click();
-      
-      // Clean up after a brief delay
-      setTimeout(() => {
-        if (document.body.contains(link)) {
-          document.body.removeChild(link);
-        }
-      }, 100);
-      
-      // Reset payment URL after opening
-      setPaymentUrl(null);
-    }
-  }, [paymentUrl]);
-
-  const handlePayment = (method: "tamara" | "invoice" | "emkan") => {
+  const handlePayment = (method: "tamara" | "mada" | "applepay" | "emkan") => {
     setSelectedPaymentMethod(method);
     setError(null);
     setSuccess(null);
@@ -101,7 +76,7 @@ export default function PaymentCard({
           .map((order) => order.title)
           .join(", ");
 
-        if (method === "invoice") {
+        if (method === "mada" || method === "applepay") {
           const response = await axios.post(
             `https://backendb2b.kadinabiye.com/fatora/create-payment`,
             {
@@ -129,7 +104,7 @@ export default function PaymentCard({
               setError("لم يتم العثور على رابط الدفع");
             }
           } else {
-            setError(response.data.message || "فشل في إنشاء الفاتورة");
+            setError(response.data.message || "فشل في إنشاء رابط الدفع");
           }
         } else if (method === "tamara") {
           const response = await axios.post(
@@ -216,7 +191,9 @@ export default function PaymentCard({
             ? "رابط الدفع عبر تمارا"
             : method === "emkan"
             ? "رابط الدفع عبر إمكان"
-            : "الفاتورة"
+            : method === "mada"
+            ? "رابط الدفع عبر مدى"
+            : "رابط الدفع عبر Apple Pay"
         }`;
 
         if (err.response?.data?.message) {
@@ -331,30 +308,42 @@ export default function PaymentCard({
           </button>
 
           <button
-            onClick={() => handlePayment("invoice")}
+            onClick={() => handlePayment("mada")}
             disabled={loading}
-            className={`w-full p-4 rounded-xl border-2 transition-all duration-300 ${
-              selectedPaymentMethod === "invoice"
+            className={`w-full p-4 rounded-xl transition-all duration-300 ${
+              selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
                 ? "border-green-500 bg-green-50 shadow-lg"
                 : "border-gray-200 hover:border-green-300 hover:bg-green-50"
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-white border border-gray-200">
-                <Image
-                  src={FatoraIcon}
-                  alt="فاتورة"
-                  width={48}
-                  height={48}
-                  className="object-contain"
-                  unoptimized
-                />
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 overflow-hidden flex items-center justify-center">
+                  <Image
+                    src={MadaIcon}
+                    alt="مدى"
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div className="w-12 h-12 overflow-hidden flex items-center justify-center">
+                  <Image
+                    src={ApplePayIcon}
+                    alt="Apple Pay"
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
               </div>
               <div className="flex-1 text-right">
                 <h3 className="font-bold text-gray-900">
                   دفع بالبطاقه الائتمانيه
                 </h3>
-                <p className="text-sm text-gray-600">دفع فوري أو لاحق</p>
+                <p className="text-sm text-gray-600">مدى و Apple Pay</p>
               </div>
             </div>
           </button>
@@ -373,7 +362,9 @@ export default function PaymentCard({
                 ? "تم اختيار الدفع عبر تمارا. يمكنك تقسيم المبلغ على أقساط بدون فوائد."
                 : selectedPaymentMethod === "emkan"
                 ? "تم اختيار الدفع عبر إمكان. دفع آمن وسريع."
-                : "تم اختيار الدفع عبر الفاتورة. يمكنك الدفع فوراً أو لاحقاً."}
+                : selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
+                ? "تم اختيار الدفع بالبطاقة الائتمانية. يمكنك الدفع عبر مدى أو Apple Pay."
+                : ""}
             </p>
           </div>
         )}

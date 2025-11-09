@@ -15,6 +15,7 @@ interface Order {
   order_id?: string; // Made optional since AddProductModal doesn't create this
   status?: string;
   phoneNumber?: string;
+  createdAt?: string; // Optional timestamp for sorting
 }
 
 interface OrdersTableProps {
@@ -152,7 +153,7 @@ const OrdersTable = ({
 
         // Sort orders by createdAt in descending order (newest first)
         const sortedOrders = filteredOrders.sort((a: Order, b: Order) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateA = a.createdAt  ? new Date(a.createdAt).getTime() : 0;
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });

@@ -24,6 +24,8 @@ import {
   MapPin,
   Building,
   DollarSign,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface Trader {
@@ -62,7 +64,7 @@ interface Product {
     createdAt: string;
     __v: number;
     verify: boolean;
-  };
+  } | string;
   traderId: string | Trader | null;
   price: number;
   quantity: number;
@@ -83,7 +85,10 @@ interface Order {
 interface OrdersResponse {
   success: boolean;
   message: string;
-  data: Order[];
+  data: {
+    allOrders: Order[];
+    directOrders: any[];
+  };
 }
 
 export default function OrdersPage() {
@@ -95,6 +100,8 @@ export default function OrdersPage() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] =
     useState<Order | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const token = Cookies.get("token_admin");
 
   useEffect(() => {
@@ -104,7 +111,7 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BaseUrl}orders`, {
+      const response = await axios.get(`${BaseUrl}admin/get-orders`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -113,7 +120,7 @@ export default function OrdersPage() {
       console.log("Orders API Response:", response.data);
 
       if (response.data.success) {
-        setOrders(response.data.data || []);
+        setOrders(response.data.data?.allOrders || []);
       } else {
         toast.error(response.data.message || "فشل في جلب الطلبات");
       }
@@ -146,15 +153,34 @@ export default function OrdersPage() {
     const matchesStatus =
       filterStatus === "all" ||
       order.status.toLowerCase() === filterStatus.toLowerCase();
-    const matchesSearch =
+      const matchesSearch =
       order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.products.some((product) =>
-        product.productId.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      order.products.some((product) => {
+        if (typeof product.productId === "object" && product.productId?.title) {
+          return product.productId.title.toLowerCase().includes(searchTerm.toLowerCase());
+        }
+        return false;
+      });
 
     return matchesStatus && matchesSearch;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchTerm]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -414,39 +440,40 @@ export default function OrdersPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      رقم الطلب
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      المنتجات
-                    </th>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        رقم الطلب
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        المنتجات
+                      </th>
 
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      المبلغ الإجمالي
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      تاريخ الطلب
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      حالة الطلب
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      حالة الدفع
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      معرف تمارا
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      الإجراءات
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredOrders.map((order) => (
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        المبلغ الإجمالي
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        تاريخ الطلب
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        حالة الطلب
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        حالة الدفع
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        معرف تمارا
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        الإجراءات
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedOrders.map((order) => (
                     <tr
                       key={order._id}
                       className="hover:bg-gray-50 transition-colors duration-200"
@@ -463,7 +490,12 @@ export default function OrdersPage() {
                             >
                               <Package className="w-4 h-4 text-gray-400" />
                               <span className="truncate max-w-xs">
-                                {product.productId.title} (×{product.quantity})
+                                {typeof product.productId === "object" && product.productId?.title
+                                  ? product.productId.title
+                                  : typeof product.productId === "string"
+                                  ? `منتج ${product.productId.slice(-8)}`
+                                  : "منتج غير معروف"}{" "}
+                                (×{product.quantity})
                               </span>
                             </div>
                           ))}
@@ -517,6 +549,94 @@ export default function OrdersPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700">عدد العناصر في الصفحة:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-3 py-1 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    >
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="50">50</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700">
+                      عرض {startIndex + 1} - {Math.min(endIndex, filteredOrders.length)} من{" "}
+                      {filteredOrders.length}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      title="الصفحة السابقة"
+                    >
+                      <ChevronRight className="w-5 h-5 text-black" />
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return true;
+                          }
+                          return false;
+                        })
+                        .map((page, index, array) => {
+                          // Add ellipsis if there's a gap
+                          const showEllipsisBefore = index > 0 && array[index - 1] !== page - 1;
+                          return (
+                            <React.Fragment key={page}>
+                              {showEllipsisBefore && (
+                                <span className="px-2 text-gray-500">...</span>
+                              )}
+                              <button
+                                onClick={() => handlePageChange(page)}
+                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                  currentPage === page
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+                    </div>
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                      title="الصفحة التالية"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-black" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>
@@ -612,31 +732,40 @@ export default function OrdersPage() {
                       className="bg-gray-50 rounded-xl p-4 border border-gray-200"
                     >
                       <div className="flex gap-4">
-                        {product.productId.images &&
+                        {typeof product.productId === "object" &&
+                          product.productId?.images &&
                           product.productId.images[0] && (
                             <img
                               src={product.productId.images[0]}
-                              alt={product.productId.title}
+                              alt={
+                                product.productId.title || "منتج"
+                              }
                               className="w-24 h-24 object-cover rounded-lg"
                             />
                           )}
                         <div className="flex-1">
                           <h5 className="font-semibold text-gray-900 mb-2">
-                            {product.productId.title}
+                            {typeof product.productId === "object" && product.productId?.title
+                              ? product.productId.title
+                              : typeof product.productId === "string"
+                              ? `منتج ${product.productId.slice(-8)}`
+                              : "منتج غير معروف"}
                           </h5>
-                          <p className="text-sm text-gray-600 mb-2">
-                            {product.productId.description}
-                          </p>
+                          {typeof product.productId === "object" && product.productId?.description && (
+                            <p className="text-sm text-gray-600 mb-2">
+                              {product.productId.description}
+                            </p>
+                          )}
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-gray-500">السعر:</span>{" "}
-                              <span className="font-medium">
+                              <span className="font-medium text-black">
                                 {product.price.toLocaleString()} ر.س
                               </span>
                             </div>
                             <div>
                               <span className="text-gray-500">الكمية:</span>{" "}
-                              <span className="font-medium">
+                              <span className="font-medium text-black">
                                 {product.quantity}
                               </span>
                             </div>
@@ -647,7 +776,7 @@ export default function OrdersPage() {
                                   ? "التاجر:"
                                   : "معرف التاجر:"}
                               </span>{" "}
-                              <span className="font-medium">
+                              <span className="font-medium text-black">
                                 {typeof product.traderId === "object" &&
                                 product.traderId
                                   ? getTraderDisplayName(product.traderId)
