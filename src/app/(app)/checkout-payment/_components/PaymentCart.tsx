@@ -100,6 +100,8 @@ export default function PaymentCard({
             if (response.data.data?.result?.checkout_url) {
               setPaymentUrl(response.data.data.result.checkout_url);
               setSuccess("تم إنشاء رابط الدفع بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.result.checkout_url);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
@@ -128,6 +130,8 @@ export default function PaymentCard({
             if (response.data?.data.checkoutUrl) {
               setPaymentUrl(response.data.data.checkoutUrl);
               setSuccess("تم إنشاء رابط الدفع عبر تمارا بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.checkoutUrl);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
@@ -159,6 +163,8 @@ export default function PaymentCard({
             if (response.data.data.data.paymentURL) {
               setPaymentUrl(response.data.data.data.paymentURL);
               setSuccess("تم إنشاء رابط الدفع عبر إمكان بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.data.paymentURL);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
@@ -311,7 +317,8 @@ export default function PaymentCard({
             onClick={() => handlePayment("mada")}
             disabled={loading}
             className={`w-full p-4 rounded-xl transition-all duration-300 ${
-              selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
+              selectedPaymentMethod === "mada" ||
+              selectedPaymentMethod === "applepay"
                 ? "border-green-500 bg-green-50 shadow-lg"
                 : "border-gray-200 hover:border-green-300 hover:bg-green-50"
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -362,7 +369,8 @@ export default function PaymentCard({
                 ? "تم اختيار الدفع عبر تمارا. يمكنك تقسيم المبلغ على أقساط بدون فوائد."
                 : selectedPaymentMethod === "emkan"
                 ? "تم اختيار الدفع عبر إمكان. دفع آمن وسريع."
-                : selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
+                : selectedPaymentMethod === "mada" ||
+                  selectedPaymentMethod === "applepay"
                 ? "تم اختيار الدفع بالبطاقة الائتمانية. يمكنك الدفع عبر مدى أو Apple Pay."
                 : ""}
             </p>

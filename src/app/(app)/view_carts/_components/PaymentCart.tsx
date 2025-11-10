@@ -45,9 +45,8 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     );
   };
 
-
   const calculateTenValue = () => {
-    return calculateSubtotal() * 0.1; // 10% of subtotal
+    return calculateSubtotal() * 0.1;
   };
 
   const calculateMainPrice = () => {
@@ -77,7 +76,7 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
     const tenValue = calculateTenValue();
     return mainPrice + addedValue + tenValue;
   };
-  
+
   // console.log(calculateMainPrice());   // 4304.347826086957
   // console.log(calculateAddedValue());   // 719.902173913043
   // console.log(calculateTenValue());   // 495
@@ -126,8 +125,11 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           if (response.data.success) {
             console.log(response.data.result);
             if (response.data.data?.result?.checkout_url) {
+              console.log(response.data.data.result.checkout_url);
               setPaymentUrl(response.data.data.result.checkout_url);
               setSuccess("تم إنشاء رابط الدفع بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.result.checkout_url);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
@@ -155,7 +157,10 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           if (response.data.success) {
             if (response.data?.data.checkoutUrl) {
               setPaymentUrl(response.data.data.checkoutUrl);
+              console.log(response.data.data.checkoutUrl);
               setSuccess("تم إنشاء رابط الدفع عبر تمارا بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.checkoutUrl);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
@@ -186,12 +191,14 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             console.log(response.data.data.data.paymentURL);
             if (response.data.data.data.paymentURL) {
               setPaymentUrl(response.data.data.data.paymentURL);
+              console.log(response.data.data.data.paymentURL);
               setSuccess("تم إنشاء رابط الدفع عبر إمكان بنجاح");
+              // Navigate to payment URL
+              window.location.replace(response.data.data.data.paymentURL);
             } else {
               setError("لم يتم العثور على رابط الدفع");
             }
           } else {
-            // Handle Emkan specific error structure
             let errorMessage = "فشل في إنشاء رابط الدفع عبر إمكان";
 
             if (response.data.message) {
@@ -200,7 +207,6 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
               } else if (response.data.message.message) {
                 errorMessage = response.data.message.message;
 
-                // Handle specific Emkan error codes
                 if (response.data.message.details?.code === "BNPLO-2001") {
                   errorMessage =
                     "المبلغ أقل من 400 ريال. الحد الأدنى للدفع عبر إمكان هو 400 ريال.";
@@ -230,7 +236,6 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
           } else if (err.response.data.message.message) {
             errorMessage = err.response.data.message.message;
 
-            // Handle specific Emkan error codes
             if (err.response.data.message.details?.code === "BNPLO-2001") {
               errorMessage =
                 "المبلغ أقل من 400 ريال. الحد الأدنى للدفع عبر إمكان هو 400 ريال.";
@@ -293,7 +298,9 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             </div>
 
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
-              <span className="text-gray-700 font-medium">ضريبة القيمة المضافة:</span>
+              <span className="text-gray-700 font-medium">
+                ضريبة القيمة المضافة:
+              </span>
               <span className="text-blue-600 font-semibold">
                 +{calculateAddedValue().toFixed(2)} ر.س
               </span>
@@ -378,7 +385,8 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
             onClick={() => handlePayment("mada")}
             disabled={loading}
             className={`w-full p-4 rounded-xl border-2 transition-all duration-300 ${
-              selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
+              selectedPaymentMethod === "mada" ||
+              selectedPaymentMethod === "applepay"
                 ? "border-green-500 bg-green-50 shadow-lg"
                 : "border-gray-200 hover:border-green-300 hover:bg-green-50"
             } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
@@ -429,7 +437,8 @@ export default function PaymentCard({ orderData }: PaymentCardProps) {
                 ? "تم اختيار الدفع عبر تمارا. يمكنك تقسيم المبلغ على أقساط بدون فوائد."
                 : selectedPaymentMethod === "emkan"
                 ? "تم اختيار الدفع عبر إمكان. دفع آمن وسريع."
-                : selectedPaymentMethod === "mada" || selectedPaymentMethod === "applepay"
+                : selectedPaymentMethod === "mada" ||
+                  selectedPaymentMethod === "applepay"
                 ? "تم اختيار الدفع بالبطاقة الائتمانية. يمكنك الدفع عبر مدى أو Apple Pay."
                 : ""}
             </p>
