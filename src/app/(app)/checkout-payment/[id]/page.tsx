@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { OrderDetails } from "@/app/lib/type";  
+import { OrderDetails } from "@/app/lib/type";
 import {
   Package,
   Calendar,
@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   Receipt,
   ArrowLeft,
+  CheckCircle,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import axios from "axios";
@@ -166,8 +167,12 @@ export default function OrderDetailsPage() {
                   <Package className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold mb-2 text-white">تفاصيل الطلب</h1>
-                  <p className="text-blue-100 text-sm">مراجعة تفاصيل الطلب والدفع</p>
+                  <h1 className="text-3xl font-bold mb-2 text-white">
+                    تفاصيل الطلب
+                  </h1>
+                  <p className="text-blue-100 text-sm">
+                    مراجعة تفاصيل الطلب والدفع
+                  </p>
                 </div>
               </div>
 
@@ -240,7 +245,9 @@ export default function OrderDetailsPage() {
                   <h2 className="text-xl font-bold text-gray-900">
                     المنتجات ({orderData.orders.length})
                   </h2>
-                  <p className="text-gray-500 text-sm">قائمة المنتجات المطلوبة</p>
+                  <p className="text-gray-500 text-sm">
+                    قائمة المنتجات المطلوبة
+                  </p>
                 </div>
               </div>
 
@@ -259,14 +266,20 @@ export default function OrderDetailsPage() {
                   <Receipt className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">ملخص الطلب</h2>
-                  <p className="text-gray-500 text-sm">تفاصيل الأسعار والرسوم</p>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    ملخص الطلب
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    تفاصيل الأسعار والرسوم
+                  </p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-200 bg-gray-50 rounded-lg px-4">
-                  <span className="text-gray-700 font-semibold">عدد المنتجات:</span>
+                  <span className="text-gray-700 font-semibold">
+                    عدد المنتجات:
+                  </span>
                   <span className="font-bold text-gray-900 text-lg">
                     {orderData.orders.length}
                   </span>
@@ -313,10 +326,31 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </Card>
-            <PaymentCard
-              orderData={orderData}
-              paymentDetails={paymentDetails || undefined}
-            />
+            {orderData.orders[0]?.status?.toLowerCase() === "pending" ? (
+              <PaymentCard
+                orderData={orderData}
+                paymentDetails={paymentDetails || undefined}
+              />
+            ) : (
+              <Card className="p-6 shadow-md border border-gray-100 bg-white">
+                <div className="flex flex-col items-center justify-center text-center py-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+                    <CheckCircle className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    تم إكمال الطلب
+                  </h2>
+                  <p className="text-gray-600 text-lg mb-4">
+                    تم معالجة طلبك بنجاح
+                  </p>
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 w-full">
+                    <p className="text-sm text-gray-700">
+                      شكراً لك! تم استلام طلبك وسيتم معالجته قريباً.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </div>

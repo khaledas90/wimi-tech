@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
-import { Send, X } from "lucide-react";
+import { useState, useRef } from "react";
+import { Send, X, Download, QrCode } from "lucide-react";
 import FormField from "@/app/components/ui/Formfield";
 import { BaseUrl } from "@/app/components/Baseurl";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FieldForm } from "@/app/lib/type";
 import Cookies from "js-cookie";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Order {
   _id: string;
@@ -38,6 +39,9 @@ const BulkSendPaymentLink = ({
   });
   const [sending, setSending] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [paymentLink, setPaymentLink] = useState("");
+  const qrCodeRef = useRef<HTMLDivElement>(null);
   // Calculate total amount for all orders
   const totalAmount = orders.reduce(
     (sum, order) => sum + order.price * order.quantity,
@@ -110,11 +114,14 @@ const BulkSendPaymentLink = ({
       console.log(response.data.data._id);
 
       if (response.data.success) {
-        toast.success(`تم إرسال ${orders.length} رابط دفع بنجاح 🎉`);
-        await axios.post(
+        const link = `https://wimi.sa/checkout-payment/${response.data.data._id}`;
+        setOrderId(response.data.data._id);
+
+        // Send SMS
+        const smsResponse = await axios.post(
           `${BaseUrl}send-sms`,
           {
-            link: `https://wimi.sa/checkout-payment/${response.data.data._id}`,
+            link: link,
             phoneNumber: formData.phoneNumber,
           },
           {
@@ -122,8 +129,17 @@ const BulkSendPaymentLink = ({
           }
         );
 
-        onLinkSent();
-        onClose();
+        if (
+          smsResponse.data.success ||
+          smsResponse.status === 200 ||
+          smsResponse.status === 201
+        ) {
+          toast.success(`تم إرسال ${orders.length} رابط دفع بنجاح 🎉`);
+          setPaymentLink(link);
+          setShowQRModal(true);
+        } else {
+          toast.error("فشل في إرسال الرسالة النصية");
+        }
       } else {
         toast.error(response.data.message || "فشل في إرسال روابط الدفع");
       }
@@ -136,6 +152,101 @@ const BulkSendPaymentLink = ({
       setSending(false);
     }
   };
+
+  const downloadQRCode = () => {
+    if (!qrCodeRef.current) return;
+
+    const svg = qrCodeRef.current.querySelector("svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `qrcode-${orderId || "payment"}.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      toast.success("تم تحميل رمز QR بنجاح");
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
+  const handleCloseQRModal = () => {
+    setShowQRModal(false);
+    onLinkSent();
+    onClose();
+  };
+
+  if (showQRModal) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100 max-w-md w-full">
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-center flex-1">
+              <QrCode className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+              <h3 className="text-xl font-semibold text-gray-800">
+                رمز QR للدفع
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                امسح الرمز للوصول إلى صفحة الدفع
+              </p>
+            </div>
+            <button
+              onClick={handleCloseQRModal}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center space-y-4">
+            <div
+              ref={qrCodeRef}
+              className="bg-white p-4 rounded-lg border-2 border-gray-200"
+            >
+              <QRCodeSVG
+                value={paymentLink}
+                size={256}
+                level="H"
+                includeMargin={true}
+              />
+            </div>
+
+            <div className="w-full bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <p className="text-xs text-gray-600 mb-1">رابط الدفع:</p>
+              <p className="text-sm text-blue-600 break-all font-mono">
+                {paymentLink}
+              </p>
+            </div>
+
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={downloadQRCode}
+                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition flex items-center justify-center gap-2 shadow-lg"
+              >
+                <Download size={20} />
+                تحميل QR Code
+              </button>
+              <button
+                onClick={handleCloseQRModal}
+                className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

@@ -52,19 +52,21 @@ interface Trader {
 }
 
 interface Product {
-  productId: {
-    _id: string;
-    title: string;
-    traderId: string;
-    description: string;
-    price: number;
-    category: string;
-    stockQuantity: number;
-    images: string[];
-    createdAt: string;
-    __v: number;
-    verify: boolean;
-  } | string;
+  productId:
+    | {
+        _id: string;
+        title: string;
+        traderId: string;
+        description: string;
+        price: number;
+        category: string;
+        stockQuantity: number;
+        images: string[];
+        createdAt: string;
+        __v: number;
+        verify: boolean;
+      }
+    | string;
   traderId: string | Trader | null;
   price: number;
   quantity: number;
@@ -76,7 +78,7 @@ interface Order {
   userId: string;
   products: Product[];
   status: "Pending" | "Delivered" | "Cancelled";
-  paymentState: "Pending" | "Paid" | "Failed";
+  paymentState: "Pending" | "Paid" | "Completed" | "Failed";
   orderDate: string;
   tamaraId: string | null;
   __v: number;
@@ -153,12 +155,14 @@ export default function OrdersPage() {
     const matchesStatus =
       filterStatus === "all" ||
       order.status.toLowerCase() === filterStatus.toLowerCase();
-      const matchesSearch =
+    const matchesSearch =
       order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.products.some((product) => {
         if (typeof product.productId === "object" && product.productId?.title) {
-          return product.productId.title.toLowerCase().includes(searchTerm.toLowerCase());
+          return product.productId.title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
         }
         return false;
       });
@@ -224,6 +228,10 @@ export default function OrdersPage() {
       Paid: {
         color: "bg-green-100 text-green-800",
         text: "مدفوع",
+      },
+      Completed: {
+        color: "bg-green-100 text-green-800",
+        text: "تم الدفع",
       },
       Failed: {
         color: "bg-red-100 text-red-800",
@@ -474,168 +482,176 @@ export default function OrdersPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paginatedOrders.map((order) => (
-                    <tr
-                      key={order._id}
-                      className="hover:bg-gray-50 transition-colors duration-200"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {order._id.slice(-8)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="space-y-1">
-                          {order.products.slice(0, 2).map((product) => (
-                            <div
-                              key={product._id}
-                              className="flex items-center gap-2"
-                            >
-                              <Package className="w-4 h-4 text-gray-400" />
-                              <span className="truncate max-w-xs">
-                                {typeof product.productId === "object" && product.productId?.title
-                                  ? product.productId.title
-                                  : typeof product.productId === "string"
-                                  ? `منتج ${product.productId.slice(-8)}`
-                                  : "منتج غير معروف"}{" "}
-                                (×{product.quantity})
-                              </span>
-                            </div>
-                          ))}
-                          {order.products.length > 2 && (
-                            <p className="text-xs text-gray-500">
-                              +{order.products.length - 2} منتجات أخرى
-                            </p>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        {calculateTotalAmount(order).toLocaleString()} ر.س
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          {formatDate(order.orderDate)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(order.status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getPaymentStateBadge(order.paymentState)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {order.tamaraId ? (
-                          <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                            {order.tamaraId}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 italic">
-                            غير متوفر
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleViewDetails(order)}
-                            className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                            title="عرض التفاصيل"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">عدد العناصر في الصفحة:</span>
-                    <select
-                      value={itemsPerPage}
-                      onChange={(e) => {
-                        setItemsPerPage(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="px-3 py-1 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    >
-                      <option value="5">5</option>
-                      <option value="10">10</option>
-                      <option value="20">20</option>
-                      <option value="50">50</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-700">
-                      عرض {startIndex + 1} - {Math.min(endIndex, filteredOrders.length)} من{" "}
-                      {filteredOrders.length}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                      title="الصفحة السابقة"
-                    >
-                      <ChevronRight className="w-5 h-5 text-black" />
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter((page) => {
-                          // Show first page, last page, current page, and pages around current
-                          if (
-                            page === 1 ||
-                            page === totalPages ||
-                            (page >= currentPage - 1 && page <= currentPage + 1)
-                          ) {
-                            return true;
-                          }
-                          return false;
-                        })
-                        .map((page, index, array) => {
-                          // Add ellipsis if there's a gap
-                          const showEllipsisBefore = index > 0 && array[index - 1] !== page - 1;
-                          return (
-                            <React.Fragment key={page}>
-                              {showEllipsisBefore && (
-                                <span className="px-2 text-gray-500">...</span>
-                              )}
-                              <button
-                                onClick={() => handlePageChange(page)}
-                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                                  currentPage === page
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
-                                }`}
+                      <tr
+                        key={order._id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {order._id.slice(-8)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900">
+                          <div className="space-y-1">
+                            {order.products.slice(0, 2).map((product) => (
+                              <div
+                                key={product._id}
+                                className="flex items-center gap-2"
                               >
-                                {page}
-                              </button>
-                            </React.Fragment>
-                          );
-                        })}
+                                <Package className="w-4 h-4 text-gray-400" />
+                                <span className="truncate max-w-xs">
+                                  {typeof product.productId === "object" &&
+                                  product.productId?.title
+                                    ? product.productId.title
+                                    : typeof product.productId === "string"
+                                    ? `منتج ${product.productId.slice(-8)}`
+                                    : "منتج غير معروف"}{" "}
+                                  (×{product.quantity})
+                                </span>
+                              </div>
+                            ))}
+                            {order.products.length > 2 && (
+                              <p className="text-xs text-gray-500">
+                                +{order.products.length - 2} منتجات أخرى
+                              </p>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          {calculateTotalAmount(order).toLocaleString()} ر.س
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            {formatDate(order.orderDate)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(order.status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getPaymentStateBadge(order.paymentState)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.tamaraId ? (
+                            <span className="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                              {order.tamaraId}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">
+                              غير متوفر
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleViewDetails(order)}
+                              className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
+                              title="عرض التفاصيل"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">
+                        عدد العناصر في الصفحة:
+                      </span>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="px-3 py-1 text-black border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      >
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                      </select>
                     </div>
 
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                      title="الصفحة التالية"
-                    >
-                      <ChevronLeft className="w-5 h-5 text-black" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">
+                        عرض {startIndex + 1} -{" "}
+                        {Math.min(endIndex, filteredOrders.length)} من{" "}
+                        {filteredOrders.length}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        title="الصفحة السابقة"
+                      >
+                        <ChevronRight className="w-5 h-5 text-black" />
+                      </button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter((page) => {
+                            // Show first page, last page, current page, and pages around current
+                            if (
+                              page === 1 ||
+                              page === totalPages ||
+                              (page >= currentPage - 1 &&
+                                page <= currentPage + 1)
+                            ) {
+                              return true;
+                            }
+                            return false;
+                          })
+                          .map((page, index, array) => {
+                            // Add ellipsis if there's a gap
+                            const showEllipsisBefore =
+                              index > 0 && array[index - 1] !== page - 1;
+                            return (
+                              <React.Fragment key={page}>
+                                {showEllipsisBefore && (
+                                  <span className="px-2 text-gray-500">
+                                    ...
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => handlePageChange(page)}
+                                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                                    currentPage === page
+                                      ? "bg-blue-600 text-white"
+                                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              </React.Fragment>
+                            );
+                          })}
+                      </div>
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-2 rounded-lg text-black border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                        title="الصفحة التالية"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-black" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
             </>
           )}
         </div>
@@ -737,25 +753,25 @@ export default function OrdersPage() {
                           product.productId.images[0] && (
                             <img
                               src={product.productId.images[0]}
-                              alt={
-                                product.productId.title || "منتج"
-                              }
+                              alt={product.productId.title || "منتج"}
                               className="w-24 h-24 object-cover rounded-lg"
                             />
                           )}
                         <div className="flex-1">
                           <h5 className="font-semibold text-gray-900 mb-2">
-                            {typeof product.productId === "object" && product.productId?.title
+                            {typeof product.productId === "object" &&
+                            product.productId?.title
                               ? product.productId.title
                               : typeof product.productId === "string"
                               ? `منتج ${product.productId.slice(-8)}`
                               : "منتج غير معروف"}
                           </h5>
-                          {typeof product.productId === "object" && product.productId?.description && (
-                            <p className="text-sm text-gray-600 mb-2">
-                              {product.productId.description}
-                            </p>
-                          )}
+                          {typeof product.productId === "object" &&
+                            product.productId?.description && (
+                              <p className="text-sm text-gray-600 mb-2">
+                                {product.productId.description}
+                              </p>
+                            )}
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
                               <span className="text-gray-500">السعر:</span>{" "}

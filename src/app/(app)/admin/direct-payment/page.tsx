@@ -69,19 +69,34 @@ const DirectPaymentPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (checkResponse.data.success && checkResponse.data.data.bool === true) {
+      if (checkResponse.data.success === false) {
+        // User not found
+        setUserFound(false);
+        setStep(3);
+        toast("المستخدم غير موجود، يرجى إدخال اسم المستخدم", { icon: "ℹ️" });
+      } else if (
+        checkResponse.data.success === true &&
+        checkResponse.data.data
+      ) {
+        // User found
         setUserFound(true);
+        setUserId(checkResponse.data.data._id);
+        setDataUser(checkResponse.data.data);
         setStep(2);
         toast.success("تم العثور على المستخدم");
       } else {
+        // Unexpected response
         setUserFound(false);
         setStep(3);
         toast("المستخدم غير موجود، يرجى إدخال اسم المستخدم", { icon: "ℹ️" });
       }
     } catch (error: any) {
+      // Check if error response has success: false
       if (
+        error.response?.data?.success === false ||
         error.response?.status === 404 ||
         error.response?.data?.message?.includes("User not found") ||
+        error.response?.data?.message?.includes("User not Found") ||
         error.response?.data?.message?.includes("not found")
       ) {
         setUserFound(false);
@@ -154,17 +169,6 @@ const DirectPaymentPage = () => {
     setShowBulkSendModal(false);
     setSelectedOrdersForBulk([]);
     toast.success("تم إرسال روابط الدفع بنجاح");
-  };
-
-  const openSendLinkModal = (
-    orderId: string,
-    quantity: number,
-    price: number
-  ) => {
-    setSelectedOrderId(orderId);
-    setSelectedQuantity(quantity);
-    setSelectedPrice(price);
-    setShowSendLinkModal(true);
   };
 
   const handleBulkSendPaymentLinks = (selectedOrders: any[]) => {
